@@ -1,12 +1,44 @@
 /**
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * 
+ * Colors are based on Figma design tokens.
  */
 
 import { Platform } from 'react-native';
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
+
+// Figma Design Tokens
+export const FigmaColors = {
+  // Earth tones
+  earthBrown: '#794509',
+  earthDarker: '#65421a',
+  earthUnsaturatedDarker: '#50463a',
+  
+  // Grays
+  white: '#FFFFFF',
+  graysWhite: '#ffffff',
+  
+  // Text colors
+  textSaveMe: '#3e3e3e',
+  textSecondary: '#8d8d8d',
+  textTertiary: '#8f8f8f',
+  textBlack: '#000000',
+  
+  // Background colors
+  backgroundLight: '#fffaf5',
+  warningBackground: 'rgba(228,177,133,0.3)',
+  warningText: '#c4320a',
+  
+  // Border colors
+  borderDashed: '#b0b0b0',
+  borderLight: '#a4a7ae',
+  
+  // Navigation
+  navButtonBackground: 'rgba(255,255,255,0.22)',
+};
 
 export const Colors = {
   light: {
@@ -16,6 +48,8 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    // Figma colors
+    ...FigmaColors,
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +58,8 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    // Figma colors (same for now, will be updated when dark mode is implemented)
+    ...FigmaColors,
   },
 };
 
