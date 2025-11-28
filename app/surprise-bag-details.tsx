@@ -1,16 +1,16 @@
+import { getSurpriseBagById, SurpriseBag } from '@/api/surpriseBags';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  SafeAreaView,
-  TouchableOpacity,
+    ActivityIndicator,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { getSurpriseBagById, SurpriseBag } from '@/api/surpriseBags';
 
 export default function SurpriseBagDetailsScreen() {
   const router = useRouter();
