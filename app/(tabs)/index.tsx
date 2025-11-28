@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getSurpriseBags, SurpriseBag } from '@/api/surpriseBags';
 import SurpriseBagCard from '@/components/SurpriseBagCard';
+import { t } from '@/i18n';
 
 export default function InicioScreen() {
   const router = useRouter();
@@ -32,7 +33,8 @@ export default function InicioScreen() {
       setSurpriseBags(data);
     } catch (err: any) {
       console.error('Error loading surprise bags:', err);
-      setError(err.message || 'Error al cargar las bolsas sorpresa');
+      // Error toast is already shown by the API function
+      setError(t('errors.loadSurpriseBags'));
     } finally {
       setLoading(false);
     }
@@ -57,13 +59,13 @@ export default function InicioScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.locationButton} disabled>
-            <Text style={styles.locationText}>Colegiales, Buenos Aires</Text>
+            <Text style={styles.locationText}>{t('inicio.location')}</Text>
             <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0a7ea4" />
-          <Text style={styles.loadingText}>Cargando bolsas sorpresa...</Text>
+          <Text style={styles.loadingText}>{t('inicio.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -74,7 +76,7 @@ export default function InicioScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity style={styles.locationButton} disabled>
-            <Text style={styles.locationText}>Colegiales, Buenos Aires</Text>
+            <Text style={styles.locationText}>{t('inicio.location')}</Text>
             <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
         </View>
@@ -85,7 +87,7 @@ export default function InicioScreen() {
             style={styles.retryButton}
             onPress={loadSurpriseBags}
           >
-            <Text style={styles.retryButtonText}>Reintentar</Text>
+            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -96,14 +98,14 @@ export default function InicioScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.locationButton} disabled>
-          <Text style={styles.locationText}>Colegiales, Buenos Aires</Text>
+          <Text style={styles.locationText}>{t('inicio.location')}</Text>
           <Ionicons name="chevron-down" size={20} color="#666" />
         </TouchableOpacity>
       </View>
       {surpriseBags.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="bag-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>No hay bolsas sorpresa disponibles</Text>
+          <Text style={styles.emptyText}>{t('inicio.empty')}</Text>
         </View>
       ) : (
         <FlatList

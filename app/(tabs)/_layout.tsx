@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { t } from '@/i18n';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -19,28 +20,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
+          title: t('navigation.inicio'),
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="pedidos"
+        name="orders"
         options={{
-          title: 'Pedidos',
+          title: t('navigation.pedidos'),
           tabBarIcon: ({ color }) => <Ionicons name="receipt" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="favoritos"
+        name="favourites"
         options={{
-          title: 'Favoritos',
+          title: t('navigation.favoritos'),
           tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="perfil"
+        name="profile"
         options={{
-          title: 'Perfil',
+          title: t('navigation.perfil'),
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
       />

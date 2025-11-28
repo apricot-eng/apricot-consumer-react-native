@@ -1,4 +1,5 @@
 import { getSurpriseBagById, SurpriseBag } from '@/api/surpriseBags';
+import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -25,13 +26,14 @@ export default function SurpriseBagDetailsScreen() {
         setLoading(true);
         const id = parseInt(params.id as string);
         if (isNaN(id)) {
-          throw new Error('Invalid surprise bag ID');
+          throw new Error(t('errors.invalidId'));
         }
         const data = await getSurpriseBagById(id);
         setSurpriseBag(data);
       } catch (err: any) {
         console.error('Error loading surprise bag details:', err);
-        setError(err.message || 'Error al cargar los detalles');
+        // Error toast is already shown by the API function
+        setError(t('errors.loadDetails'));
       } finally {
         setLoading(false);
       }
@@ -49,7 +51,7 @@ export default function SurpriseBagDetailsScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalles</Text>
+          <Text style={styles.headerTitle}>{t('details.title')}</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.loadingContainer}>
@@ -66,12 +68,12 @@ export default function SurpriseBagDetailsScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalles</Text>
+          <Text style={styles.headerTitle}>{t('details.title')}</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color="#ff6b6b" />
-          <Text style={styles.errorText}>{error || 'No se encontró la bolsa sorpresa'}</Text>
+          <Text style={styles.errorText}>{error || t('errors.notFound')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -89,9 +91,9 @@ export default function SurpriseBagDetailsScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.placeholderContainer}>
           <Ionicons name="information-circle-outline" size={64} color="#0a7ea4" />
-          <Text style={styles.placeholderTitle}>Coming Soon</Text>
+          <Text style={styles.placeholderTitle}>{t('details.comingSoon')}</Text>
           <Text style={styles.placeholderText}>
-            Full details page will be implemented later.
+            {t('details.comingSoonDescription')}
           </Text>
           <View style={styles.infoBox}>
             <Text style={styles.infoTitle}>{surpriseBag.title}</Text>

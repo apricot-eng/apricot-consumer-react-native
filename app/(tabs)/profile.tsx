@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { t } from '@/i18n';
 
-export default function FavoritosScreen() {
+export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Ionicons name="heart-outline" size={64} color="#ccc" />
-        <Text style={styles.text}>Under development</Text>
+        <Ionicons name="person-outline" size={64} color="#ccc" />
+        <Text style={styles.text}>{t('placeholders.underDevelopment')}</Text>
       </View>
     </SafeAreaView>
   );

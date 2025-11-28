@@ -10,6 +10,7 @@ import { Image as ExpoImage } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { SurpriseBag } from '@/api/surpriseBags';
 import { formatArgentinePeso } from '@/utils/currency';
+import { t } from '@/i18n';
 
 interface SurpriseBagCardProps {
   surpriseBag: SurpriseBag;
@@ -65,7 +66,7 @@ export default function SurpriseBagCard({ surpriseBag, onPress }: SurpriseBagCar
         {/* Bags Left Badge */}
         {bags_left !== undefined && bags_left !== null && (
           <View style={styles.bagsLeftBadge}>
-            <Text style={styles.bagsLeftText}>Quedan {bags_left}</Text>
+            <Text style={styles.bagsLeftText}>{t('surpriseBag.quedan')} {bags_left}</Text>
           </View>
         )}
       </View>
@@ -87,7 +88,7 @@ export default function SurpriseBagCard({ surpriseBag, onPress }: SurpriseBagCar
         {/* Pickup Time Window */}
         {pickup_time_window && (
           <Text style={styles.pickupTime}>
-            Buscar: {pickup_time_window} hs
+            {t('surpriseBag.buscar')}: {pickup_time_window} hs
           </Text>
         )}
 
@@ -98,7 +99,7 @@ export default function SurpriseBagCard({ surpriseBag, onPress }: SurpriseBagCar
           </Text>
           {original_price && parseFloat(original_price) > parseFloat(price) && (
             <Text style={styles.originalPrice}>
-              {formatArgentinePeso(original_price)} pesos
+              {formatArgentinePeso(original_price)} {t('surpriseBag.pesos')}
             </Text>
           )}
         </View>
@@ -122,7 +123,7 @@ export default function SurpriseBagCard({ surpriseBag, onPress }: SurpriseBagCar
               {store.store_name}
             </Text>
           )}
-          <Text style={styles.distance}>0 km</Text>
+          <Text style={styles.distance}>0 {t('surpriseBag.km')}</Text>
         </View>
       </View>
     </TouchableOpacity>

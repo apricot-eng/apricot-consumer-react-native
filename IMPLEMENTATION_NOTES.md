@@ -31,7 +31,7 @@ The following fields are used in the UI but may not be available in the current 
 - Error handling is implemented with retry functionality
 
 ### Navigation
-- Bottom tab navigation with 4 tabs: Inicio, Pedidos, Favoritos, Perfil
+- Bottom tab navigation with 4 tabs: Inicio (index), Orders, Favourites, Profile
 - Stack navigation for surprise bag details page
 - Details page is a placeholder showing "Coming Soon" message
 

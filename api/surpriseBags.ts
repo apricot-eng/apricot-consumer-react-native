@@ -1,3 +1,4 @@
+import { getErrorType, showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
 export interface SurpriseBag {
@@ -40,11 +41,11 @@ export const getSurpriseBags = async (neighbourhood?: string): Promise<SurpriseB
     return response.data;
   } catch (error: any) {
     console.error('Error fetching surprise bags:', error);
-    // Return empty array on error to prevent crashes
-    if (error.response) {
-      throw new Error(`API Error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
-    }
-    throw new Error('Network error: Could not connect to API');
+    const errorType = getErrorType(error);
+    showErrorToast(errorType);
+    
+    // Re-throw with a generic message for component error handling
+    throw error;
   }
 };
 
@@ -54,10 +55,11 @@ export const getSurpriseBagById = async (id: number): Promise<SurpriseBag> => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching surprise bag:', error);
-    if (error.response) {
-      throw new Error(`API Error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
-    }
-    throw new Error('Network error: Could not connect to API');
+    const errorType = getErrorType(error);
+    showErrorToast(errorType);
+    
+    // Re-throw for component error handling
+    throw error;
   }
 };
 
