@@ -1,7 +1,8 @@
 import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FavouritesScreen() {
   return (

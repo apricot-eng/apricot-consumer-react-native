@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { getSurpriseBags, SurpriseBag } from '@/api/surpriseBags';
 import SurpriseBagCard from '@/components/SurpriseBagCard';
 import { t } from '@/i18n';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InicioScreen() {
   const router = useRouter();
