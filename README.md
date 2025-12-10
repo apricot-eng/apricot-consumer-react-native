@@ -10,18 +10,23 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. **Important: Development Build Required**
+
+   This app uses MapLibre React Native, which requires native code. You **cannot** use Expo Go. You need to create a development build instead.
+
+   See [Development Build Setup Guide](./docs/DEVELOPMENT_BUILD_SETUP.md) for detailed instructions.
+
+   **Quick start:**
+   - For iOS: Install Xcode, then run `npx expo run:ios`
+   - For Android: Install Android Studio, then run `npx expo run:android`
+
+3. Start the development server
 
    ```bash
-   npx expo start
+   npx expo start --dev-client
    ```
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   This connects to your development build instead of Expo Go.
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
