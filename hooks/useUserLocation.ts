@@ -38,17 +38,26 @@ export const useUserLocation = (): UseUserLocationResult => {
             setHasLocation(false);
             await AsyncStorage.setItem(LOCATION_SET_KEY, 'false');
           }
-        } catch (error) {
+        } catch (error: any) {
           // If API check fails but we have cached value, trust the cache
           // This handles offline scenarios
+          console.warn('Location API verification failed, using cache:', error.message);
           setHasLocation(cachedValue === 'true');
         }
       } else {
-        // No cached value, check API
-        const location = await getUserLocation();
-        const locationSet = location !== null;
-        setHasLocation(locationSet);
-        await AsyncStorage.setItem(LOCATION_SET_KEY, locationSet ? 'true' : 'false');
+        // No cached value, check API with timeout handling
+        try {
+          const location = await getUserLocation();
+          const locationSet = location !== null;
+          setHasLocation(locationSet);
+          await AsyncStorage.setItem(LOCATION_SET_KEY, locationSet ? 'true' : 'false');
+        } catch (apiError: any) {
+          // If API fails (network error, timeout, etc.), assume no location
+          // This prevents the app from hanging on startup
+          console.warn('Location API check failed, assuming no location:', apiError.message);
+          setHasLocation(false);
+          await AsyncStorage.setItem(LOCATION_SET_KEY, 'false');
+        }
       }
     } catch (error: any) {
       // If it's a 404, user has no location

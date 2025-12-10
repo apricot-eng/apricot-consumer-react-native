@@ -6,6 +6,7 @@ const API_BASE_URL = API_CONFIG.BASE_URL;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000, // 10 second timeout to prevent hanging
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
