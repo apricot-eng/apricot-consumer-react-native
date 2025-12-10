@@ -51,6 +51,18 @@ export const translations = {
       mañana: 'Mañana',
       pickupHoy: 'hoy',
     },
+    // Location Screen
+    location: {
+      searchPlaceholder: 'Ciudad o barrio',
+      distanceLabel: 'Seleccionar un radio de distancia',
+      useCurrentLocation: 'Usar mi ubicación actual',
+      select: 'Seleccionar',
+      noResults: 'No se encontraron resultados',
+      searching: 'Buscando...',
+      saving: 'Guardando ubicación...',
+      selectLocation: 'Selecciona una ubicación',
+      loadingStores: 'Cargando tiendas...',
+    },
     // Error Messages
     errors: {
       network: {
@@ -126,6 +138,18 @@ export const translations = {
       hoy: 'Today',
       mañana: 'Tomorrow',
       pickupHoy: 'hoy',
+    },
+    // Location Screen
+    location: {
+      searchPlaceholder: 'City or neighborhood',
+      distanceLabel: 'Select a distance radius',
+      useCurrentLocation: 'Use my current location',
+      select: 'Select',
+      noResults: 'No results found',
+      searching: 'Searching...',
+      saving: 'Saving location...',
+      selectLocation: 'Select a location',
+      loadingStores: 'Loading stores...',
     },
     // Error Messages
     errors: {

@@ -21,8 +21,21 @@ export interface Store {
   longitude?: number;
   map_id?: string;
   approved?: boolean;
+  distance?: number; // Distance in kilometers (from nearby endpoint)
   created_at?: string;
   updated_at?: string;
+}
+
+export interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+export interface UserLocationCoords {
+  lat: number;
+  lon: number;
 }
 
 export const getStoreById = async (id: number): Promise<Store> => {
@@ -31,6 +44,40 @@ export const getStoreById = async (id: number): Promise<Store> => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching store:', error);
+    const errorType = getErrorType(error);
+    showErrorToast(errorType);
+    
+    // Re-throw for component error handling
+    throw error;
+  }
+};
+
+/**
+ * Get stores within map bounds
+ * @param bounds - Map bounding box coordinates
+ * @param userLocation - Optional user location for distance calculation
+ * @returns Array of stores within the bounds
+ */
+export const getStoresNearby = async (
+  bounds: MapBounds,
+  userLocation?: UserLocationCoords
+): Promise<Store[]> => {
+  try {
+    const params = new URLSearchParams();
+    params.append('north', bounds.north.toString());
+    params.append('south', bounds.south.toString());
+    params.append('east', bounds.east.toString());
+    params.append('west', bounds.west.toString());
+    
+    if (userLocation) {
+      params.append('lat', userLocation.lat.toString());
+      params.append('lon', userLocation.lon.toString());
+    }
+
+    const response = await apiClient.get(`/stores/nearby?${params.toString()}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error fetching nearby stores:', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     
