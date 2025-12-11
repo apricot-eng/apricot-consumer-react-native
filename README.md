@@ -30,6 +30,33 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Logging
+
+The app includes a configurable logging system for debugging API calls and errors. Logs appear in:
+- **Expo Dev Tools**: When running `npx expo start --dev-client`
+- **Xcode Console**: When running on iOS simulator
+- **Metro Bundler**: In the terminal where Expo is running
+
+### Configuration
+
+Logging can be controlled via environment variables (create a `.env` file in the project root):
+
+```bash
+# Enable/disable logging (default: true in dev)
+EXPO_PUBLIC_LOG_ENABLED=true
+
+# Enable verbose logging - shows API requests/responses with full JSON (default: true in dev)
+EXPO_PUBLIC_LOG_VERBOSE=true
+
+# Log level: 'debug', 'info', 'warn', or 'error' (default: 'debug')
+EXPO_PUBLIC_LOG_LEVEL=debug
+```
+
+Verbose logging automatically shows:
+- All API requests with headers, params, and body
+- All API responses with status, headers, and JSON data
+- Detailed error information including response data
+
 ## Get a fresh project
 
 When you're ready, run:

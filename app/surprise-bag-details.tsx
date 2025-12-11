@@ -7,16 +7,16 @@ import { formatArgentinePeso } from '@/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image as ExpoImage } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -29,48 +29,51 @@ export default function SurpriseBagDetailsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [allergenModalVisible, setAllergenModalVisible] = useState(false);
 
-  useEffect(() => {
-    const loadDetails = async () => {
-      try {
-        setLoading(true);
-        const id = parseInt(params.id as string);
-        if (isNaN(id)) {
-          throw new Error(t('errors.invalidId'));
-        }
-        const data = await getSurpriseBagById(id);
-        setSurpriseBag(data);
-
-        // Fetch full store details only if authenticated and store_id is available
-        if (data.store_id) {
-          try {
-            // Check if user is authenticated before attempting to fetch store details
-            const token = await AsyncStorage.getItem('auth_token');
-            if (token) {
-              const storeData = await getStoreById(data.store_id);
-              setStore(storeData);
-            }
-            // If not authenticated, silently use the store data from surprise bag response
-          } catch (storeError: any) {
-            // Only log if it's not a 401 (unauthorized) error
-            // 401 is expected when user is not authenticated
-            if (storeError?.response?.status !== 401) {
-              console.warn('Could not fetch full store details:', storeError);
-            }
-            // Silently fall back to using store data from surprise bag
+  // Only fetch when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const loadDetails = async () => {
+        try {
+          setLoading(true);
+          const id = parseInt(params.id as string);
+          if (isNaN(id)) {
+            throw new Error(t('errors.invalidId'));
           }
-        }
-      } catch (err: any) {
-        console.error('Error loading surprise bag details:', err);
-        setError(t('errors.loadDetails'));
-      } finally {
-        setLoading(false);
-      }
-    };
+          const data = await getSurpriseBagById(id);
+          setSurpriseBag(data);
 
-    if (params.id) {
-      loadDetails();
-    }
-  }, [params.id]);
+          // Fetch full store details only if authenticated and store_id is available
+          if (data.store_id) {
+            try {
+              // Check if user is authenticated before attempting to fetch store details
+              const token = await AsyncStorage.getItem('auth_token');
+              if (token) {
+                const storeData = await getStoreById(data.store_id);
+                setStore(storeData);
+              }
+              // If not authenticated, silently use the store data from surprise bag response
+            } catch (storeError: any) {
+              // Only log if it's not a 401 (unauthorized) error
+              // 401 is expected when user is not authenticated
+              if (storeError?.response?.status !== 401) {
+                console.warn('Could not fetch full store details:', storeError);
+              }
+              // Silently fall back to using store data from surprise bag
+            }
+          }
+        } catch (err: any) {
+          console.error('Error loading surprise bag details:', err);
+          setError(t('errors.loadDetails'));
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (params.id) {
+        loadDetails();
+      }
+    }, [params.id])
+  );
 
   if (loading) {
     return (

@@ -9,7 +9,6 @@ import Toast from 'react-native-toast-message';
 import { LocationProvider } from '@/contexts/LocationContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import LocationScreen from './location';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -31,22 +30,8 @@ export default function RootLayout() {
     );
   }
 
-  // Show location screen if user hasn't set location
-  if (!hasLocation) {
-  return (
-    <SafeAreaProvider>
-      <LocationProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <LocationScreen />
-          <StatusBar style="auto" />
-          <Toast />
-        </ThemeProvider>
-      </LocationProvider>
-    </SafeAreaProvider>
-  );
-  }
-
-  // Show normal app if location is set
+  // App always proceeds - default location (Palermo) is set automatically if needed
+  // Location screen is still accessible via navigation if users want to change location
   return (
     <SafeAreaProvider>
       <LocationProvider>
@@ -61,6 +46,13 @@ export default function RootLayout() {
               }} 
             />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            <Stack.Screen 
+              name="location" 
+              options={{ 
+                presentation: 'modal',
+                headerShown: false,
+              }} 
+            />
           </Stack>
           <StatusBar style="auto" />
           <Toast />

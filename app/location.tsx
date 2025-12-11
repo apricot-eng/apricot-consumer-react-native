@@ -3,6 +3,7 @@ import { getStoresNearby, MapBounds, Store } from '@/api/stores';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
+import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,16 +11,17 @@ import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-nativ
 import Slider from '@react-native-community/slider';
 import { Image as ExpoImage } from 'expo-image';
 import * as Location from 'expo-location';
+import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Keyboard,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -93,10 +95,12 @@ export default function LocationScreen() {
   const fetchStoresForBounds = useCallback(async (bounds: MapBounds) => {
     try {
       setLoadingStores(true);
+      logger.debug('LOCATION_SCREEN', 'Fetching stores for bounds', bounds);
       const nearbyStores = await getStoresNearby(bounds);
+      logger.info('LOCATION_SCREEN', `Fetched ${nearbyStores?.length || 0} stores`);
       setStores(nearbyStores);
     } catch (error) {
-      console.error('Error fetching stores:', error);
+      logger.error('LOCATION_SCREEN', 'Error fetching stores', error, { bounds });
     } finally {
       setLoadingStores(false);
     }
@@ -108,28 +112,43 @@ export default function LocationScreen() {
 
     try {
       const bounds = await mapRef.current.getVisibleBounds();
-      if (bounds) {
+      if (bounds && bounds.length >= 4) {
         const mapBounds: MapBounds = {
           north: bounds[1],
           south: bounds[3],
           east: bounds[2],
           west: bounds[0],
         };
-        fetchStoresForBounds(mapBounds);
+        
+        // Validate bounds before using them
+        if (
+          typeof mapBounds.north === 'number' &&
+          typeof mapBounds.south === 'number' &&
+          typeof mapBounds.east === 'number' &&
+          typeof mapBounds.west === 'number'
+        ) {
+          fetchStoresForBounds(mapBounds);
+        } else {
+          logger.warn('LOCATION_SCREEN', 'Invalid map bounds received', { bounds, mapBounds });
+        }
+      } else {
+        logger.warn('LOCATION_SCREEN', 'Invalid bounds array from map', { bounds });
       }
     } catch (error) {
-      console.error('Error getting map bounds:', error);
+      logger.error('LOCATION_SCREEN', 'Error getting map bounds', error);
     }
   }, [fetchStoresForBounds]);
 
-  // Initial store fetch
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      handleRegionDidChange();
-    }, 1000); // Wait for map to initialize
+  // Initial store fetch - only when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => {
+        handleRegionDidChange();
+      }, 1000); // Wait for map to initialize
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }, [handleRegionDidChange])
+  );
 
   // Handle location selection from search
   const handleLocationSelect = (location: LocationSearchResult) => {

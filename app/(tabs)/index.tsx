@@ -1,9 +1,10 @@
 import { getSurpriseBags, SurpriseBag } from '@/api/surpriseBags';
 import SurpriseBagCard from '@/components/SurpriseBagCard';
+import { useLocationContext } from '@/contexts/LocationContext';
 import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,20 +17,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function InicioScreen() {
   const router = useRouter();
+  const { currentNeighbourhood, isLoadingLocation } = useLocationContext();
   const [surpriseBags, setSurpriseBags] = useState<SurpriseBag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadSurpriseBags();
-  }, []);
 
   const loadSurpriseBags = async () => {
     try {
       setLoading(true);
       setError(null);
-      // Using "Palermo" as the neighbourhood as specified
-      const data = await getSurpriseBags('Palermo');
+      // Use neighbourhood from user's location or default (Palermo)
+      const data = await getSurpriseBags(currentNeighbourhood);
       setSurpriseBags(data);
     } catch (err: any) {
       console.error('Error loading surprise bags:', err);
@@ -39,6 +37,15 @@ export default function InicioScreen() {
       setLoading(false);
     }
   };
+
+  // Only fetch when screen is focused and location is loaded
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoadingLocation && currentNeighbourhood) {
+        loadSurpriseBags();
+      }
+    }, [currentNeighbourhood, isLoadingLocation])
+  );
 
   const handleCardPress = (surpriseBag: SurpriseBag) => {
     router.push({
