@@ -1,8 +1,9 @@
 import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/locations';
-import { getStoresNearby, MapBounds, Store } from '@/api/stores';
+import { getStoresNearby, Store } from '@/api/stores';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
+import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
@@ -26,8 +27,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from '@/styles/app/LocationScreen.styles';
 
-// Default center on Buenos Aires
-const DEFAULT_CENTER: [number, number] = [-58.4280328, -34.5912554];
+// Default center on Palermo, Buenos Aires, Argentina
+const DEFAULT_CENTER: [number, number] = [-58.4245236, -34.5803362];
 const DEFAULT_ZOOM = 12;
 
 // MapLibre style URL (using a free style)
@@ -92,22 +93,28 @@ export default function LocationScreen() {
     };
   }, [searchQuery, performSearch]);
 
-  // Fetch stores when map bounds change
-  const fetchStoresForBounds = useCallback(async (bounds: MapBounds) => {
+  // Fetch stores using center point and radius
+  // Converts center+radius to bounding box for the API
+  const fetchStoresForCenter = useCallback(async (
+    center: [number, number],
+    radiusKm: number
+  ) => {
     try {
       setLoadingStores(true);
-      logger.debug('LOCATION_SCREEN', 'Fetching stores for bounds', bounds);
+      const bounds = calculateBoundsFromCenter(center, radiusKm);
+      logger.debug('LOCATION_SCREEN', 'Fetching stores for center and radius', { center, radiusKm, bounds });
       const nearbyStores = await getStoresNearby(bounds);
       logger.info('LOCATION_SCREEN', `Fetched ${nearbyStores?.length || 0} stores`);
       setStores(nearbyStores);
     } catch (error) {
-      logger.error('LOCATION_SCREEN', 'Error fetching stores', error, { bounds });
+      logger.error('LOCATION_SCREEN', 'Error fetching stores', error, { center, radiusKm });
     } finally {
       setLoadingStores(false);
     }
   }, []);
 
-  // Handle map region change (debounced)
+  // Handle map region change - update center and fetch stores
+  // Uses center+radius approach instead of bounds
   const handleRegionDidChange = useCallback(async () => {
     if (!mapRef.current) return;
 
@@ -122,32 +129,18 @@ export default function LocationScreen() {
         const neLon = Number(bounds[1][0]);
         const neLat = Number(bounds[1][1]);
         
-        // Ensure north > south and east > west
-        // In southern hemisphere, north is less negative (higher) than south
-        const north = Math.max(neLat, swLat);
-        const south = Math.min(neLat, swLat);
-        const east = Math.max(neLon, swLon);
-        const west = Math.min(neLon, swLon);
+        // Calculate center from bounds
+        const centerLon = (neLon + swLon) / 2;
+        const centerLat = (neLat + swLat) / 2;
         
-        const mapBounds: MapBounds = {
-          north,
-          south,
-          east,
-          west,
-        };
-        
-        // Validate bounds before using them
-        if (
-          typeof mapBounds.north === 'number' &&
-          typeof mapBounds.south === 'number' &&
-          typeof mapBounds.east === 'number' &&
-          typeof mapBounds.west === 'number' &&
-          mapBounds.north > mapBounds.south &&
-          mapBounds.east > mapBounds.west
-        ) {
-          fetchStoresForBounds(mapBounds);
+        // Validate center coordinates
+        if (isValidCoordinate(centerLat, centerLon)) {
+          const newCenter: [number, number] = [centerLon, centerLat];
+          setMapCenter(newCenter);
+          // Fetch stores using center + distance slider value
+          fetchStoresForCenter(newCenter, distance);
         } else {
-          logger.warn('LOCATION_SCREEN', 'Invalid map bounds received', { bounds, mapBounds });
+          logger.warn('LOCATION_SCREEN', 'Invalid center coordinates calculated from bounds', { bounds, centerLon, centerLat });
         }
       } else {
         logger.warn('LOCATION_SCREEN', 'Invalid bounds array from map', { bounds });
@@ -155,17 +148,27 @@ export default function LocationScreen() {
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error getting map bounds', error);
     }
-  }, [fetchStoresForBounds]);
+  }, [distance, fetchStoresForCenter]);
+
+  // Refetch stores when distance slider changes
+  useEffect(() => {
+    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+      fetchStoresForCenter(mapCenter, distance);
+    }
+  }, [distance, mapCenter, fetchStoresForCenter]);
 
   // Initial store fetch - only when screen is focused
   useFocusEffect(
     useCallback(() => {
       const timer = setTimeout(() => {
-        handleRegionDidChange();
+        // Use center+radius approach for initial fetch
+        if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+          fetchStoresForCenter(mapCenter, distance);
+        }
       }, 1000); // Wait for map to initialize
 
       return () => clearTimeout(timer);
-    }, [handleRegionDidChange])
+    }, [mapCenter, distance, fetchStoresForCenter])
   );
 
   // Handle location selection from search
@@ -186,6 +189,8 @@ export default function LocationScreen() {
         animationMode: 'easeTo',
       });
     }
+    // Fetch stores for new center with current distance
+    fetchStoresForCenter(newCenter, distance);
   };
 
   // Handle current location button
@@ -219,6 +224,8 @@ export default function LocationScreen() {
           animationMode: 'easeTo',
         });
       }
+      // Fetch stores for new center with current distance
+      fetchStoresForCenter(newCenter, distance);
     } catch (error) {
       console.error('Error getting current location:', error);
       showSuccessToast('Error al obtener la ubicación');
@@ -264,6 +271,7 @@ export default function LocationScreen() {
           ref={mapRef}
           style={styles.map}
           mapStyle={MAP_STYLE_URL}
+          onRegionDidChange={handleRegionDidChange}
         >
           <Camera
             ref={cameraRef}
@@ -275,7 +283,7 @@ export default function LocationScreen() {
 
           {/* Store Pins */}
           {stores
-            .filter(store => store.latitude && store.longitude)
+            .filter(store => isValidCoordinate(store.latitude, store.longitude))
             .map(store => (
               <PointAnnotation
                 key={store.id}

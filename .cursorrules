@@ -1,0 +1,194 @@
+# Apricot React Native - Cursor Rules
+
+## Project Overview
+This is a React Native food delivery/surprise bag service app called "Apricot" built with Expo Router. The app allows users to browse and order surprise bags from local stores in Buenos Aires, Argentina.
+
+## Tech Stack
+- **Framework**: React Native 0.81.5 with Expo ~54.0.27
+- **Router**: Expo Router ~6.0.17 (file-based routing)
+- **Language**: TypeScript 5.9.2 (strict mode enabled)
+- **State Management**: React Context API
+- **HTTP Client**: Axios
+- **Maps**: MapLibre React Native (@maplibre/maplibre-react-native)
+- **Location**: Expo Location
+- **Storage**: AsyncStorage
+- **UI**: React Native components with custom styling
+- **Icons**: @expo/vector-icons (Ionicons)
+- **Toast**: react-native-toast-message
+
+## Project Structure
+- `/app` - Expo Router screens (file-based routing)
+  - `/main_navigation` - Bottom tab navigation screens
+- `/api` - API client functions and endpoints
+  - `client.ts` - Axios instance with interceptors and auth token handling
+  - `locations.ts` - Location search and user location API
+  - `stores.ts` - Store-related API calls
+  - `surpriseBags.ts` - Surprise bag API calls
+- `/components` - Reusable React components
+  - `/ui` - UI primitives (collapsible, icon-symbol, etc.)
+  - Themed components (themed-view, themed-text)
+- `/config` - Configuration files (API base URL, etc.)
+- `/constants` - App constants (theme colors, location defaults)
+- `/contexts` - React Context providers (LocationContext)
+- `/hooks` - Custom React hooks
+  - `useUserLocation.ts` - User location state management
+  - `use-theme-color.ts` - Theme color hook
+- `/styles` - StyleSheet definitions (mirrors app structure)
+- `/utils` - Utility functions
+  - `logger.ts` - Configurable logging system
+  - `toast.ts` - Toast message helpers
+  - `mapPins.ts` - Map pin image utilities
+  - `categoryIcons.ts` - Category icon mapping
+  - `currency.ts` - Currency formatting
+- `/i18n` - Internationalization (translations)
+- `/docs` - Documentation files
+
+## Code Style & Conventions
+
+### TypeScript
+- Use strict TypeScript mode
+- Always type function parameters and return types
+- Use interfaces for object shapes
+- Prefer `type` for unions and intersections
+- Use path aliases: `@/*` maps to project root
+
+### React Components
+- Use functional components with hooks (no class components)
+- Use `export default` for screen components
+- Use named exports for reusable components
+- Prefer `useCallback` and `useMemo` for performance optimization
+- Use `useFocusEffect` from expo-router for screen focus events
+
+### Naming Conventions
+- Components: PascalCase (e.g., `LocationScreen.tsx`)
+- Files: Match component name or use kebab-case for utilities
+- Styles: Separate style files in `/styles` directory mirroring component structure
+- Hooks: Start with `use` prefix (e.g., `useUserLocation.ts`)
+- Constants: UPPER_SNAKE_CASE (e.g., `DEFAULT_CENTER`)
+
+### Styling
+- Use `StyleSheet.create()` from React Native
+- Store styles in separate `.styles.ts` files in `/styles` directory
+- Mirror the component file structure in styles directory
+- Use themed components (`ThemedView`, `ThemedText`) when appropriate
+- Colors should come from `constants/theme.ts` (FigmaColors or Colors)
+- Use Figma design tokens when available
+
+### API Calls
+- Always use the `apiClient` from `/api/client.ts` (not raw axios)
+- API client automatically:
+  - Adds auth token from AsyncStorage
+  - Logs all requests/responses via logger utility
+  - Handles errors consistently
+- API functions should be in `/api` directory, organized by domain
+- Always handle errors and loading states
+- Use TypeScript interfaces for API response types
+
+### Location & Context
+- Use `LocationContext` for location-related state across the app
+- Use `useUserLocation` hook to check if user has set location
+- Location screen appears conditionally if user hasn't set location
+- Always use `useLocationContext()` hook to access location context
+
+### Logging
+- Use `logger` utility from `/utils/logger.ts`
+- Logging is configurable via environment variables:
+  - `EXPO_PUBLIC_LOG_ENABLED` - Enable/disable logging
+  - `EXPO_PUBLIC_LOG_VERBOSE` - Verbose API logging
+  - `EXPO_PUBLIC_LOG_LEVEL` - Log level (debug, info, warn, error)
+- Use `logger.api.request()`, `logger.api.response()`, `logger.api.error()` for API calls
+- Use `logger.error()` for general errors
+
+### Toast Messages
+- Use `showSuccessToast()` and other helpers from `/utils/toast.ts`
+- Don't use toast library directly
+
+### Currency Formatting
+- Use currency utility from `/utils/currency.ts`
+- Format: Argentine peso with dot as thousands separator (e.g., 2300 → "$2.300")
+
+### Internationalization
+- Use `t()` function from `/i18n` for all user-facing strings
+- Add translations to `/i18n/translations.ts`
+- Never hardcode Spanish text (use translation keys)
+
+## Important Patterns
+
+### Navigation
+- File-based routing with Expo Router
+- Bottom tabs in `/main_navigation` directory
+- Stack navigation for detail screens
+- Use `useRouter()` from expo-router for navigation
+- Use `useFocusEffect` for screen lifecycle events
+
+### Map Integration
+- Use MapLibre React Native for maps
+- Default center: Buenos Aires (-34.5912554, -58.4280328)
+- Map pins use SVG images from `/assets/images/map-pins/`
+- Use `getMapPinImage()` utility to map store categories to pin images
+- Store categories: cafe, verduleria, heladeria, panaderia, pescaderia, fiambreria, floreria, restaurante, sushi
+
+### Error Handling
+- Always wrap API calls in try-catch blocks
+- Show user-friendly error messages via toast
+- Log errors using logger utility
+- Implement retry logic where appropriate
+- Handle missing/null API fields gracefully (check before rendering)
+
+### Image Handling
+- Use `expo-image` (ExpoImage) for images
+- Handle missing images with placeholder icons
+- Store logos: use generic storefront icon if missing
+
+### Data Validation
+- Always check for existence of optional API fields before rendering
+- Use optional chaining (`?.`) and nullish coalescing (`??`)
+- Provide fallback values for missing data
+
+## Development Notes
+
+### API Configuration
+- Base URL configured in `/config/api.ts`
+- For mobile testing, use local IP address (not localhost)
+- API client automatically adds Bearer token from AsyncStorage
+- Default timeout: 10 seconds
+
+### Development Build Required
+- This app requires a development build (cannot use Expo Go)
+- MapLibre requires native code
+- Run `npx expo run:ios` or `npx expo run:android`
+- Start dev server with `npx expo start --dev-client`
+
+### Key API Endpoints
+- `GET /locations/search` - Search locations
+- `POST /user/location` - Save user location
+- `GET /user/location` - Get user location
+- `GET /stores/nearby` - Get stores within map bounds
+- `GET /surprise-bags?neighbourhood=...` - Get surprise bags
+
+## Best Practices
+
+1. **Always check for null/undefined** before accessing object properties
+2. **Use TypeScript types** - don't use `any` unless absolutely necessary
+3. **Extract reusable logic** into custom hooks or utilities
+4. **Keep components focused** - one responsibility per component
+5. **Handle loading and error states** in all async operations
+6. **Use environment variables** for configuration (API URLs, feature flags)
+7. **Follow existing patterns** - check similar components before creating new ones
+8. **Add translations** for all user-facing text
+9. **Use logger** for debugging instead of console.log
+10. **Test on both iOS and Android** when making platform-specific changes
+11. **TSX files always start with an upper case letter**, except for the standard _latyout.tsx files.
+12. **Style files go in styles**. Don't add styles inside the tsx file.
+
+## What NOT to Do
+
+- Don't use `console.log` - use the logger utility instead
+- Don't make direct axios calls - use apiClient
+- Don't hardcode strings - use i18n translations
+- Don't hardcode colors - use theme constants
+- Don't create new API clients - use the existing one
+- Don't bypass error handling
+- Don't use class components
+- Don't ignore TypeScript errors
+

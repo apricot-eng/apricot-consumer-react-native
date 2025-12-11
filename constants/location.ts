@@ -4,8 +4,8 @@
  */
 
 export const DEFAULT_LOCATION = {
-    lat: -34.5912554,
-    lon: -58.4280328,
+    lat: -34.5803362,
+    lon: -58.4245236,
     display_name: 'Palermo, Buenos Aires, Argentina',
     neighbourhood: 'Palermo',
     city: 'Buenos Aires',
@@ -14,4 +14,4 @@ export const DEFAULT_LOCATION = {
     place_id: 'default_palermo',
   };
   
-  export const DEFAULT_LOCATION_COORDS: [number, number] = [-58.4280328, -34.5912554];
+  export const DEFAULT_LOCATION_COORDS: [number, number] = [-58.4245236, -34.5803362];
