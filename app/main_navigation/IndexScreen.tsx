@@ -8,12 +8,13 @@ import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { styles } from '@/styles/app/main_navigation/IndexScreen.styles';
 
 export default function InicioScreen() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function InicioScreen() {
 
   const handleCardPress = (surpriseBag: SurpriseBag) => {
     router.push({
-      pathname: '/surprise-bag-details',
+      pathname: '/SurpriseBagDetailsScreen',
       params: { id: surpriseBag.id.toString() },
     });
   };
@@ -126,79 +127,3 @@ export default function InicioScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
-  },
-  locationText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  listContent: {
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    gap: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#0a7ea4',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
-});

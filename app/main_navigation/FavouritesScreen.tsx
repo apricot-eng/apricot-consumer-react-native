@@ -1,8 +1,10 @@
 import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { styles } from '@/styles/app/main_navigation/FavouritesScreen.styles';
 
 export default function FavouritesScreen() {
   return (
@@ -14,21 +16,4 @@ export default function FavouritesScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-  },
-  text: {
-    fontSize: 18,
-    color: '#999',
-  },
-});
 

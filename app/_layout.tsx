@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -10,9 +10,7 @@ import { LocationProvider } from '@/contexts/LocationContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserLocation } from '@/hooks/useUserLocation';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { styles } from '@/styles/app/_layout.styles';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -36,18 +34,27 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <LocationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack
+            initialRouteName="main_navigation"
+            screenOptions={{
+              headerShown: false,
+            }}>
             <Stack.Screen 
-              name="surprise-bag-details" 
+              name="SurpriseBagDetailsScreen" 
               options={{ 
                 presentation: 'card',
                 headerShown: false,
               }} 
             />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             <Stack.Screen 
-              name="location" 
+              name="ModalScreen" 
+              options={{ 
+                presentation: 'modal',
+                headerShown: false,
+              }} 
+            />
+            <Stack.Screen 
+              name="LocationScreen" 
               options={{ 
                 presentation: 'modal',
                 headerShown: false,
@@ -61,12 +68,3 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-});

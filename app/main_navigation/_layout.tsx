@@ -18,28 +18,28 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="index"
+        name="IndexScreen"
         options={{
           title: t('navigation.inicio'),
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="orders"
+        name="OrdersScreen"
         options={{
           title: t('navigation.pedidos'),
           tabBarIcon: ({ color }) => <Ionicons name="receipt" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="favourites"
+        name="FavouritesScreen"
         options={{
           title: t('navigation.favoritos'),
           tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="ProfileScreen"
         options={{
           title: t('navigation.perfil'),
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
