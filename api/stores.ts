@@ -74,6 +74,14 @@ export const getStoresNearby = async (
       throw new Error('Invalid map bounds: missing required coordinates');
     }
 
+    // Ensure north > south and east > west
+    if (bounds.north <= bounds.south) {
+      throw new Error(`Invalid map bounds: north (${bounds.north}) must be greater than south (${bounds.south})`);
+    }
+    if (bounds.east <= bounds.west) {
+      throw new Error(`Invalid map bounds: east (${bounds.east}) must be greater than west (${bounds.west})`);
+    }
+
     const params = new URLSearchParams();
     params.append('north', bounds.north.toString());
     params.append('south', bounds.south.toString());
