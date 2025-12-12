@@ -5,10 +5,12 @@ import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
 import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
+import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-native';
 import Slider from '@react-native-community/slider';
+import { Image as ExpoImage } from 'expo-image';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -339,8 +341,12 @@ export default function LocationScreen() {
             id="test-pin"
             coordinate={[-58.4245236, -34.5803362]}
           >
-            <View style={[styles.pinContainer, { backgroundColor: 'red', borderRadius: 15 }]}>
-              <View style={{ width: 30, height: 30, backgroundColor: 'red', borderRadius: 15 }} />
+            <View style={styles.pinContainer}>
+              <ExpoImage
+                source={getMapPinImage('cafe')}
+                style={styles.pinImage}
+                contentFit="contain"
+              />
             </View>
           </PointAnnotation>
 
@@ -366,14 +372,19 @@ export default function LocationScreen() {
                 lon: store.longitude,
                 category: store.category
               });
+              const pinImage = getMapPinImage(store.category || 'cafe');
               return (
                 <PointAnnotation
                   key={store.id}
                   id={`store-${store.id}`}
                   coordinate={[store.longitude!, store.latitude!]}
                 >
-                  <View style={[styles.pinContainer, { backgroundColor: 'blue', borderRadius: 15 }]}>
-                    <View style={{ width: 30, height: 30, backgroundColor: 'blue', borderRadius: 15 }} />
+                  <View style={styles.pinContainer}>
+                    <ExpoImage
+                      source={pinImage}
+                      style={styles.pinImage}
+                      contentFit="contain"
+                    />
                   </View>
                 </PointAnnotation>
               );
