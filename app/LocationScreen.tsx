@@ -32,7 +32,7 @@ const DEFAULT_CENTER: [number, number] = [-58.4245236, -34.5803362];
 const DEFAULT_ZOOM = 12;
 
 // MapLibre style URL (using a free style)
-const MAP_STYLE_URL = 'https://demotiles.maplibre.org/style.json';
+const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v2/style.json?key=RqClR17cITmceexTV2AF';
 
 export default function LocationScreen() {
   const { refresh } = useUserLocation();
