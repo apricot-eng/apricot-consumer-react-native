@@ -5,12 +5,10 @@ import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
 import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
-import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-native';
 import Slider from '@react-native-community/slider';
-import { Image as ExpoImage } from 'expo-image';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -50,6 +48,8 @@ export default function LocationScreen() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const searchTimeoutRef = useRef<number | null>(null);
+  const fetchTimeoutRef = useRef<number | null>(null);
+  const lastFetchedRef = useRef<{ center: [number, number]; radius: number } | null>(null);
 
   // Debounced search function
   const performSearch = useCallback(async (query: string) => {
@@ -99,24 +99,57 @@ export default function LocationScreen() {
     center: [number, number],
     radiusKm: number
   ) => {
+    // Prevent concurrent requests
+    if (loadingStores) {
+      logger.debug('LOCATION_SCREEN', 'Skipping fetch - already loading');
+      return;
+    }
+
+    // Check if we already fetched for this exact center and radius
+    const lastFetched = lastFetchedRef.current;
+    if (lastFetched && 
+        Math.abs(lastFetched.center[0] - center[0]) < 0.0001 && 
+        Math.abs(lastFetched.center[1] - center[1]) < 0.0001 &&
+        lastFetched.radius === radiusKm) {
+      logger.debug('LOCATION_SCREEN', 'Skipping fetch - same center and radius');
+      return;
+    }
+
     try {
       setLoadingStores(true);
       const bounds = calculateBoundsFromCenter(center, radiusKm);
       logger.debug('LOCATION_SCREEN', 'Fetching stores for center and radius', { center, radiusKm, bounds });
       const nearbyStores = await getStoresNearby(bounds);
       logger.info('LOCATION_SCREEN', `Fetched ${nearbyStores?.length || 0} stores`);
+      
+      // Log store details for debugging
+      logger.debug('LOCATION_SCREEN', 'Stores received from API', {
+        count: nearbyStores?.length || 0,
+        stores: nearbyStores?.map(store => ({
+          id: store.id,
+          name: store.store_name,
+          lat: store.latitude,
+          lon: store.longitude,
+          category: store.category,
+          hasValidCoords: isValidCoordinate(store.latitude, store.longitude)
+        }))
+      });
+      
       setStores(nearbyStores);
+      
+      // Store last fetched values
+      lastFetchedRef.current = { center, radius: radiusKm };
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error fetching stores', error, { center, radiusKm });
     } finally {
       setLoadingStores(false);
     }
-  }, []);
+  }, [loadingStores]);
 
-  // Handle map region change - update center and fetch stores
+  // Handle map region change - update center only (useEffect will handle fetch)
   // Uses center+radius approach instead of bounds
   const handleRegionDidChange = useCallback(async () => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || loadingStores) return;
 
     try {
       const bounds = await mapRef.current.getVisibleBounds();
@@ -136,9 +169,16 @@ export default function LocationScreen() {
         // Validate center coordinates
         if (isValidCoordinate(centerLat, centerLon)) {
           const newCenter: [number, number] = [centerLon, centerLat];
-          setMapCenter(newCenter);
-          // Fetch stores using center + distance slider value
-          fetchStoresForCenter(newCenter, distance);
+          
+          // Only update if center changed significantly (avoid micro-movements)
+          const currentCenter = mapCenter;
+          const latDiff = Math.abs(newCenter[1] - currentCenter[1]);
+          const lonDiff = Math.abs(newCenter[0] - currentCenter[0]);
+          const threshold = 0.001; // ~100 meters
+          
+          if (latDiff > threshold || lonDiff > threshold) {
+            setMapCenter(newCenter);
+          }
         } else {
           logger.warn('LOCATION_SCREEN', 'Invalid center coordinates calculated from bounds', { bounds, centerLon, centerLat });
         }
@@ -148,13 +188,25 @@ export default function LocationScreen() {
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error getting map bounds', error);
     }
-  }, [distance, fetchStoresForCenter]);
+  }, [loadingStores, mapCenter]);
 
-  // Refetch stores when distance slider changes
+  // Refetch stores when distance slider or map center changes (debounced)
   useEffect(() => {
-    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
-      fetchStoresForCenter(mapCenter, distance);
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
     }
+
+    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+      fetchTimeoutRef.current = setTimeout(() => {
+        fetchStoresForCenter(mapCenter, distance);
+      }, 300); // Debounce to avoid rapid successive calls
+    }
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
   }, [distance, mapCenter, fetchStoresForCenter]);
 
   // Initial store fetch - only when screen is focused
@@ -189,7 +241,7 @@ export default function LocationScreen() {
         animationMode: 'easeTo',
       });
     }
-    // Fetch stores for new center with current distance
+    // Fetch stores for new center with current distance (useEffect will also trigger, but this is intentional for immediate feedback)
     fetchStoresForCenter(newCenter, distance);
   };
 
@@ -224,7 +276,7 @@ export default function LocationScreen() {
           animationMode: 'easeTo',
         });
       }
-      // Fetch stores for new center with current distance
+      // Fetch stores for new center with current distance (useEffect will also trigger, but this is intentional for immediate feedback)
       fetchStoresForCenter(newCenter, distance);
     } catch (error) {
       console.error('Error getting current location:', error);
@@ -281,24 +333,51 @@ export default function LocationScreen() {
             }}
           />
 
-          {/* Store Pins */}
+          {/* Test pin in Palermo to verify map is working */}
+          <PointAnnotation
+            key="test-pin"
+            id="test-pin"
+            coordinate={[-58.4245236, -34.5803362]}
+          >
+            <View style={[styles.pinContainer, { backgroundColor: 'red', borderRadius: 15 }]}>
+              <View style={{ width: 30, height: 30, backgroundColor: 'red', borderRadius: 15 }} />
+            </View>
+          </PointAnnotation>
+
+          {/* Actual Store Pins */}
           {stores
-            .filter(store => isValidCoordinate(store.latitude, store.longitude))
-            .map(store => (
-              <PointAnnotation
-                key={store.id}
-                id={`store-${store.id}`}
-                coordinate={[store.longitude!, store.latitude!]}
-              >
-                <View style={styles.pinContainer}>
-                  <ExpoImage
-                    source={getMapPinImage(store.category || 'cafe')}
-                    style={styles.pinImage}
-                    contentFit="contain"
-                  />
-                </View>
-              </PointAnnotation>
-            ))}
+            .filter(store => {
+              const isValid = isValidCoordinate(store.latitude, store.longitude);
+              if (!isValid) {
+                logger.debug('LOCATION_SCREEN', 'Store filtered out - invalid coordinates', {
+                  storeId: store.id,
+                  storeName: store.store_name,
+                  lat: store.latitude,
+                  lon: store.longitude
+                });
+              }
+              return isValid;
+            })
+            .map(store => {
+              logger.debug('LOCATION_SCREEN', 'Rendering store pin', {
+                storeId: store.id,
+                storeName: store.store_name,
+                lat: store.latitude,
+                lon: store.longitude,
+                category: store.category
+              });
+              return (
+                <PointAnnotation
+                  key={store.id}
+                  id={`store-${store.id}`}
+                  coordinate={[store.longitude!, store.latitude!]}
+                >
+                  <View style={[styles.pinContainer, { backgroundColor: 'blue', borderRadius: 15 }]}>
+                    <View style={{ width: 30, height: 30, backgroundColor: 'blue', borderRadius: 15 }} />
+                  </View>
+                </PointAnnotation>
+              );
+            })}
         </MapView>
 
         {loadingStores && (

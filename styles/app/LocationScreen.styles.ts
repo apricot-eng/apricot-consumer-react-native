@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
   map: {
-    flex: 1,
+    height: '70%',
   },
   loadingOverlay: {
     position: 'absolute',
