@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
   map: {
-    height: '70%',
+    flex: 1,
   },
   loadingOverlay: {
     position: 'absolute',
@@ -40,7 +40,6 @@ export const styles = StyleSheet.create({
     maxHeight: '50%',
   },
   bottomSheetContent: {
-    flex: 1,
   },
   bottomSheetScrollContent: {
     padding: 20,
