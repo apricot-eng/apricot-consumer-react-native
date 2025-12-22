@@ -53,8 +53,73 @@ Since MapLibre React Native requires native code, you cannot use Expo Go. You ne
      ```
    - Create Android Virtual Device (AVD) for emulator
 
-3. **Java Development Kit (JDK)**
-   - Android Studio includes JDK, or install separately
+3. **Java Development Kit (JDK)** (Required)
+   
+   Android builds require Java Development Kit. **Recommended: Use Android Studio's bundled JDK** (easiest option).
+   
+   **Option 1: Use Android Studio's JDK (Recommended)**
+   
+   Android Studio includes a JDK. Configure your system to use it:
+   
+   ```bash
+   # Add to your shell profile (~/.zshrc for zsh or ~/.bash_profile for bash)
+   export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+   export PATH="$JAVA_HOME/bin:$PATH"
+   ```
+   
+   Then reload your shell configuration:
+   ```bash
+   source ~/.zshrc  # or source ~/.bash_profile
+   ```
+   
+   Verify installation:
+   ```bash
+   java -version
+   javac -version
+   ```
+   
+   You should see Java version information. If the path doesn't work, try:
+   ```bash
+   export JAVA_HOME="$HOME/Library/Android/sdk/jre"
+   ```
+   
+   **Option 2: Install JDK via Homebrew (Alternative)**
+   
+   If you prefer a standalone JDK installation:
+   
+   ```bash
+   # Install JDK 17 (recommended for Android development)
+   brew install openjdk@17
+   
+   # Link the JDK
+   sudo ln -sfn /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+   
+   # Add to your shell profile
+   echo 'export JAVA_HOME=$(/usr/libexec/java_home -v 17)' >> ~/.zshrc
+   echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> ~/.zshrc
+   
+   # Reload your shell configuration
+   source ~/.zshrc
+   ```
+   
+   Verify installation:
+   ```bash
+   java -version
+   javac -version
+   ```
+
+4. **Gradle Version** (Required)
+   
+   Expo SDK 54 requires **Gradle 8.14.3** (not Gradle 9). Gradle 9 is not compatible with React Native 0.81.5.
+   
+   The Gradle version is configured in `android/gradle/wrapper/gradle-wrapper.properties`. If you encounter Gradle compatibility errors:
+   
+   - Check your current Gradle version: `cd android && ./gradlew --version`
+   - Edit `android/gradle/wrapper/gradle-wrapper.properties` and ensure it uses:
+     ```properties
+     distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
+     ```
+   - Clean and rebuild: `cd android && ./gradlew clean && cd .. && npx expo run:android`
 
 ## Next Steps
 
@@ -131,14 +196,39 @@ Hot reload and fast refresh work the same as Expo Go. Changes to your code will 
 
 ### Android Issues
 
-**Problem:** Android SDK not found
-- **Solution:** Set `ANDROID_HOME` environment variable (see Android Setup above)
+**Problem:** Android SDK not found or "SDK location not found"
+- **Solution:** 
+  - **Option 1 (Recommended):** Create `android/local.properties` file:
+    ```bash
+    echo "sdk.dir=$HOME/Library/Android/sdk" > android/local.properties
+    ```
+    If your Android SDK is in a different location, find it in Android Studio: Preferences → Appearance & Behavior → System Settings → Android SDK
+  - **Option 2:** Set `ANDROID_HOME` environment variable in your shell profile (see Android Setup above)
+  - Verify the SDK path exists: `ls $HOME/Library/Android/sdk`
 
 **Problem:** No Android devices/emulators found
 - **Solution:** 
   - Start Android Studio
   - Open AVD Manager
   - Create and start an Android Virtual Device
+
+**Problem:** "Unable to locate a Java Runtime" or "The operation couldn't be completed. Unable to locate a Java Runtime."
+- **Solution:** 
+  - Install and configure JDK (see Java Development Kit section above)
+  - Make sure `JAVA_HOME` is set correctly in your shell profile
+  - Verify with: `java -version` and `echo $JAVA_HOME`
+  - If using Android Studio's JDK, ensure the path `/Applications/Android Studio.app/Contents/jbr/Contents/Home` exists
+  - Restart your terminal after setting environment variables
+
+**Problem:** Gradle 9 compatibility errors or build failures
+- **Solution:** 
+  - Expo SDK 54 requires Gradle 8.14.3, not Gradle 9
+  - Edit `android/gradle/wrapper/gradle-wrapper.properties`:
+    ```properties
+    distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
+    ```
+  - Clean the project: `cd android && ./gradlew clean && cd ..`
+  - Rebuild: `npx expo run:android`
 
 ### General Issues
 
@@ -242,6 +332,7 @@ npx expo start --dev-client
 # Clear cache and start
 npx expo start -c --dev-client
 ```
+
 
 
 
