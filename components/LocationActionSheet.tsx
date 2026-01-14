@@ -17,6 +17,7 @@ import { styles } from '@/styles/components/LocationActionSheet.styles';
 interface LocationActionSheetProps {
   distance: number;
   onDistanceChange: (value: number) => void;
+  onDistanceSliderComplete: (value: number) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   isSearching: boolean;
@@ -30,6 +31,7 @@ interface LocationActionSheetProps {
 export default function LocationActionSheet({
   distance,
   onDistanceChange,
+  onDistanceSliderComplete,
   searchQuery,
   onSearchQueryChange,
   isSearching,
@@ -54,6 +56,7 @@ export default function LocationActionSheet({
             maximumValue={50}
             value={distance}
             onValueChange={onDistanceChange}
+            onSlidingComplete={onDistanceSliderComplete}
             minimumTrackTintColor="#794509"
             maximumTrackTintColor="#e0e0e0"
             thumbTintColor="#794509"

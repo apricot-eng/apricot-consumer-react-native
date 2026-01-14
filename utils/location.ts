@@ -41,3 +41,18 @@ export const calculateBoundsFromCenter = (
     west: centerLon - lonDelta,
   };
 };
+
+/**
+ * Convert distance radius (in km) to appropriate MapLibre zoom level
+ * Zoom level decreases as distance increases to show larger area
+ * @param distanceKm - Distance radius in kilometers
+ * @returns Zoom level (typically 11-16 for 0-50km range)
+ */
+export const distanceToZoomLevel = (distanceKm: number): number => {
+  if (distanceKm <= 1) return 16;
+  if (distanceKm <= 2) return 15;
+  if (distanceKm <= 5) return 14;
+  if (distanceKm <= 10) return 13;
+  if (distanceKm <= 20) return 12;
+  return 11; // For 20-50km
+};

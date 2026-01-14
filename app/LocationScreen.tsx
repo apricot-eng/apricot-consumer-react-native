@@ -4,7 +4,7 @@ import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
+import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
@@ -314,6 +314,26 @@ export default function LocationScreen() {
     }
   };
 
+  // Handle distance slider completion (when user releases slider)
+  const handleDistanceSliderComplete = useCallback((value: number) => {
+    const newZoom = distanceToZoomLevel(value);
+    setMapZoom(newZoom);
+    
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: mapCenter,
+        zoomLevel: newZoom,
+        animationDuration: 500,
+        animationMode: 'easeTo',
+      });
+    }
+    
+    // Refetch stores with new distance radius
+    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+      fetchStoresForCenter(mapCenter, value);
+    }
+  }, [mapCenter, fetchStoresForCenter]);
+
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -401,6 +421,7 @@ export default function LocationScreen() {
       <LocationActionSheet
         distance={distance}
         onDistanceChange={setDistance}
+        onDistanceSliderComplete={handleDistanceSliderComplete}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
         isSearching={isSearching}
