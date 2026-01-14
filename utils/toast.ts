@@ -1,5 +1,5 @@
-import Toast from 'react-native-toast-message';
 import { t } from '@/i18n';
+import Toast from 'react-native-toast-message';
 
 export enum ErrorType {
   NETWORK = 'network',
@@ -66,6 +66,8 @@ export const getErrorType = (error: any): ErrorType => {
         error.code === 'ECONNABORTED') {
       return ErrorType.NETWORK;
     }
+    console.log("getErrorType unknown error", error);
+    // TODO: handle this error better. Map Bounds error gets caught here.
     return ErrorType.UNKNOWN;
   }
 

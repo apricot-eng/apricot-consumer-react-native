@@ -193,23 +193,24 @@ export default function LocationScreen() {
   }, [loadingStores, mapCenter]);
 
   // Refetch stores when distance slider or map center changes (debounced)
-  useEffect(() => {
-    if (fetchTimeoutRef.current) {
-      clearTimeout(fetchTimeoutRef.current);
-    }
+  // Commented out useEffect that seems overkill, until we understand why we need it better.
+  // useEffect(() => {
+  //   if (fetchTimeoutRef.current) {
+  //     clearTimeout(fetchTimeoutRef.current);
+  //   }
 
-    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
-      fetchTimeoutRef.current = setTimeout(() => {
-        fetchStoresForCenter(mapCenter, distance);
-      }, 300); // Debounce to avoid rapid successive calls
-    }
+  //   if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+  //     fetchTimeoutRef.current = setTimeout(() => {
+  //       fetchStoresForCenter(mapCenter, distance);
+  //     }, 300); // Debounce to avoid rapid successive calls
+  //   }
 
-    return () => {
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
-    };
-  }, [distance, mapCenter, fetchStoresForCenter]);
+  //   return () => {
+  //     if (fetchTimeoutRef.current) {
+  //       clearTimeout(fetchTimeoutRef.current);
+  //     }
+  //   };
+  // }, [distance, mapCenter, fetchStoresForCenter]);
 
   // Initial store fetch - only when screen is focused
   useFocusEffect(
@@ -219,7 +220,8 @@ export default function LocationScreen() {
         if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
           fetchStoresForCenter(mapCenter, distance);
         }
-      }, 1000); // Wait for map to initialize
+        console.log("useFocusEffect called");
+      }, 400); // Wait for map to initialize
 
       return () => clearTimeout(timer);
     }, [mapCenter, distance, fetchStoresForCenter])

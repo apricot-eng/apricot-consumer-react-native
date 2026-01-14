@@ -113,7 +113,9 @@ export const getUserLocation = async (): Promise<UserLocation | null> => {
     }
     console.error('Error fetching user location:', error);
     const errorType = getErrorType(error);
-    showErrorToast(errorType);
+    // Commented out showErrorToast in an error that should fail silently.
+    // showErrorToast(errorType);
+    // We don't throw an error, the user has never had their location set.
     throw error;
   }
 };
