@@ -1,5 +1,6 @@
 import { logger } from '@/utils/logger';
-import { getErrorType, showErrorToast } from '@/utils/toast';
+import { getErrorType } from '@/utils/error';
+import { showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
 export interface Store {
