@@ -13,7 +13,6 @@ export const styles = StyleSheet.create({
     maxHeight: '50%',
   },
   bottomSheetContent: {
-    flex: 1,
   },
   bottomSheetScrollContent: {
     padding: 20,
