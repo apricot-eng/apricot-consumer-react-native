@@ -1,5 +1,6 @@
 import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/locations';
 import { getStoresNearby, Store } from '@/api/stores';
+import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
@@ -7,9 +8,7 @@ import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
-import { Ionicons } from '@expo/vector-icons';
 import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-native';
-import Slider from '@react-native-community/slider';
 import { Image as ExpoImage } from 'expo-image';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
@@ -17,10 +16,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
-  ScrollView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -402,93 +398,18 @@ export default function LocationScreen() {
       </View>
 
       {/* Bottom Sheet */}
-      <View style={styles.bottomSheet}>
-        <ScrollView
-          style={styles.bottomSheetContent}
-          contentContainerStyle={styles.bottomSheetScrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Distance Slider */}
-          <View style={styles.sliderContainer}>
-            <Text style={styles.sliderLabel}>{t('location.distanceLabel')}</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={50}
-              value={distance}
-              onValueChange={setDistance}
-              minimumTrackTintColor="#794509"
-              maximumTrackTintColor="#e0e0e0"
-              thumbTintColor="#794509"
-            />
-            <Text style={styles.distanceValue}>{Math.round(distance)} km</Text>
-          </View>
-
-          {/* Search Input */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('location.searchPlaceholder')}
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {isSearching && (
-              <ActivityIndicator size="small" color="#666" style={styles.searchLoader} />
-            )}
-
-            {/* Predictive Search Overlay */}
-            {searchResults.length > 0 && (
-              <View style={styles.searchResults}>
-                {searchResults.map((result) => (
-                  <TouchableOpacity
-                    key={result.id}
-                    style={styles.searchResultItem}
-                    onPress={() => handleLocationSelect(result)}
-                  >
-                    <Ionicons name="location" size={16} color="#794509" />
-                    <Text style={styles.searchResultText} numberOfLines={1}>
-                      {result.display_name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-            {searchQuery.trim() && searchResults.length === 0 && !isSearching && (
-              <View style={styles.searchResults}>
-                <Text style={styles.noResultsText}>{t('location.noResults')}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Use Current Location */}
-          <TouchableOpacity
-            style={styles.currentLocationButton}
-            onPress={handleUseCurrentLocation}
-          >
-            <Ionicons name="compass" size={20} color="#794509" />
-            <Text style={styles.currentLocationText}>
-              {t('location.useCurrentLocation')}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Select Button */}
-          <TouchableOpacity
-            style={[styles.selectButton, saving && styles.selectButtonDisabled]}
-            onPress={handleSelect}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.selectButtonText}>{t('location.select')}</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+      <LocationActionSheet
+        distance={distance}
+        onDistanceChange={setDistance}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        isSearching={isSearching}
+        searchResults={searchResults}
+        onLocationSelect={handleLocationSelect}
+        onUseCurrentLocation={handleUseCurrentLocation}
+        onSelect={handleSelect}
+        saving={saving}
+      />
     </SafeAreaView>
   );
 }
