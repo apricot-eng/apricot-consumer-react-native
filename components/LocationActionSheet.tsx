@@ -4,12 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React from 'react';
 import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 import { styles } from '@/styles/components/LocationActionSheet.styles';
@@ -42,7 +42,6 @@ export default function LocationActionSheet({
   return (
     <View style={styles.bottomSheet}>
       <ScrollView
-        style={styles.bottomSheetContent}
         contentContainerStyle={styles.bottomSheetScrollContent}
         keyboardShouldPersistTaps="handled"
       >

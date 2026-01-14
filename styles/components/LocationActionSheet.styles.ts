@@ -12,8 +12,6 @@ export const styles = StyleSheet.create({
     elevation: 8,
     maxHeight: '50%',
   },
-  bottomSheetContent: {
-  },
   bottomSheetScrollContent: {
     padding: 20,
     paddingBottom: 40,
