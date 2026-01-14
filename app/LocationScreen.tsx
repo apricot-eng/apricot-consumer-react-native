@@ -62,7 +62,7 @@ export default function LocationScreen() {
       const results = await searchLocations(query, 3); // Max 3 results
       setSearchResults(results);
     } catch (error) {
-      console.error('Error searching locations:', error);
+      logger.error('LOCATION_SCREEN', 'Error searching locations', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -216,7 +216,7 @@ export default function LocationScreen() {
         if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
           fetchStoresForCenter(mapCenter, distance);
         }
-        console.log("useFocusEffect called");
+        logger.debug('LOCATION_SCREEN', 'useFocusEffect called');
       }, 400); // Wait for map to initialize
 
       return () => clearTimeout(timer);
@@ -279,7 +279,7 @@ export default function LocationScreen() {
       // Fetch stores for new center with current distance (useEffect will also trigger, but this is intentional for immediate feedback)
       fetchStoresForCenter(newCenter, distance);
     } catch (error) {
-      console.error('Error getting current location:', error);
+      logger.error('LOCATION_SCREEN', 'Error getting current location', error);
       showSuccessToast('Error al obtener la ubicación');
     }
   };
@@ -308,7 +308,7 @@ export default function LocationScreen() {
       
       // Navigation will be handled by root layout detecting location change
     } catch (error) {
-      console.error('Error saving location:', error);
+      logger.error('LOCATION_SCREEN', 'Error saving location', error);
     } finally {
       setSaving(false);
     }

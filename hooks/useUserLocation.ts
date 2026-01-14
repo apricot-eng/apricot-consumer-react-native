@@ -1,6 +1,7 @@
 import { getUserLocation, saveUserLocation } from '@/api/locations';
 import { DEFAULT_LOCATION } from '@/constants/location';
 import { LocationContext } from '@/contexts/LocationContext';
+import { logger } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useEffect, useState } from 'react';
 
@@ -43,7 +44,7 @@ export const useUserLocation = (): UseUserLocationResult => {
         } catch (error: any) {
           // If API check fails but we have cached value, trust the cache
           // This handles offline scenarios
-          console.warn('Location API verification failed, using cache:', error.message);
+          logger.warn('USE_USER_LOCATION', 'Location API verification failed, using cache', error);
           setHasLocation(cachedValue === 'true');
         }
       } else {
@@ -117,14 +118,14 @@ export const useUserLocation = (): UseUserLocationResult => {
       } catch (saveError: any) {
         // If save fails (network error, etc.), still mark as having location
         // so app can proceed with default
-        console.warn('Failed to save default location to API, using local default:', saveError.message);
+        logger.warn('USE_USER_LOCATION', 'Failed to save default location to API, using local default', saveError);
         setHasLocation(true);
         await AsyncStorage.setItem(LOCATION_SET_KEY, 'true');
         await AsyncStorage.setItem(DEFAULT_LOCATION_SET_KEY, 'true');
       }
     } catch (error) {
       // Fallback: even if everything fails, allow app to proceed
-      console.error('Error setting default location:', error);
+      logger.error('USE_USER_LOCATION', 'Error setting default location', error);
       setHasLocation(true);
       await AsyncStorage.setItem(LOCATION_SET_KEY, 'true');
       await AsyncStorage.setItem(DEFAULT_LOCATION_SET_KEY, 'true');

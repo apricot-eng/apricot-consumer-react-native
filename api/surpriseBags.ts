@@ -1,4 +1,5 @@
 import { getErrorType } from '@/utils/error';
+import { logger } from '@/utils/logger';
 import { showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
@@ -41,7 +42,7 @@ export const getSurpriseBags = async (neighbourhood?: string): Promise<SurpriseB
     const response = await apiClient.get(url);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching surprise bags:', error);
+    logger.error('SURPRISE_BAGS_API', 'Error fetching surprise bags', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     
@@ -55,7 +56,7 @@ export const getSurpriseBagById = async (id: number): Promise<SurpriseBag> => {
     const response = await apiClient.get(`/surprise-bags/${id}`);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching surprise bag:', error);
+    logger.error('SURPRISE_BAGS_API', 'Error fetching surprise bag', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     
