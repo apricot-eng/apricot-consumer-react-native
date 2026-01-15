@@ -8,8 +8,13 @@ import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } fro
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
-import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-native';
-import { Image as ExpoImage } from 'expo-image';
+import {
+  Camera,
+  Images,
+  MapView,
+  ShapeSource,
+  SymbolLayer
+} from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -334,6 +339,46 @@ export default function LocationScreen() {
     }
   }, [mapCenter, fetchStoresForCenter]);
 
+  // Get map pin component for rendering in PointAnnotation
+  const getMapPinComponent = useCallback((
+    id: string,
+    coordinate: [number, number],
+    pinImage: any,
+    name: string
+  ) => {
+    return (
+      <>
+      <Images images={pinImage} />
+
+      <ShapeSource
+        id={`${id}-shape`}
+        shape={{
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              id: id,
+              geometry: {
+                type: 'Point',
+                coordinates: coordinate,
+              },
+              properties: {},
+            } as GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonProperties>,
+          ],
+        }}
+      >
+        <SymbolLayer
+          id={`${id}-symbols`}
+          style={{
+            iconImage: pinImage,
+            iconSize: 0.3,
+            iconAllowOverlap: true,
+          }}
+        />
+      </ShapeSource>
+      </>
+    );
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -352,21 +397,6 @@ export default function LocationScreen() {
               zoomLevel: mapZoom,
             }}
           />
-
-          {/* Test pin in Palermo to verify map is working */}
-          <PointAnnotation
-            key="test-pin"
-            id="test-pin"
-            coordinate={[-58.4245236, -34.5803362]}
-          >
-            <View style={styles.pinContainer}>
-              <ExpoImage
-                source={getMapPinImage('cafe')}
-                style={styles.pinImage}
-                contentFit="contain"
-              />
-            </View>
-          </PointAnnotation>
 
           {/* Actual Store Pins */}
           {stores
@@ -391,20 +421,11 @@ export default function LocationScreen() {
                 category: store.category
               });
               const pinImage = getMapPinImage(store.category || 'cafe');
-              return (
-                <PointAnnotation
-                  key={store.id}
-                  id={`store-${store.id}`}
-                  coordinate={[store.longitude!, store.latitude!]}
-                >
-                  <View style={styles.pinContainer}>
-                    <ExpoImage
-                      source={pinImage}
-                      style={styles.pinImage}
-                      contentFit="contain"
-                    />
-                  </View>
-                </PointAnnotation>
+              return getMapPinComponent(
+                `store-${store.id}`,
+                [store.longitude!, store.latitude!],
+                pinImage,
+                store.category || 'restaurante',
               );
             })}
         </MapView>
