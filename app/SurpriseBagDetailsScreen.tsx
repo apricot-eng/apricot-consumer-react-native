@@ -4,6 +4,7 @@ import { FigmaColors } from '@/constants/theme';
 import { t } from '@/i18n';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { formatArgentinePeso } from '@/utils/currency';
+import { logger } from '@/utils/logger';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image as ExpoImage } from 'expo-image';
@@ -57,13 +58,13 @@ export default function SurpriseBagDetailsScreen() {
               // Only log if it's not a 401 (unauthorized) error
               // 401 is expected when user is not authenticated
               if (storeError?.response?.status !== 401) {
-                console.warn('Could not fetch full store details:', storeError);
+                logger.warn('SURPRISE_BAG_DETAILS', 'Could not fetch full store details', storeError);
               }
               // Silently fall back to using store data from surprise bag
             }
           }
         } catch (err: any) {
-          console.error('Error loading surprise bag details:', err);
+          logger.error('SURPRISE_BAG_DETAILS', 'Error loading surprise bag details', err);
           setError(t('errors.loadDetails'));
         } finally {
           setLoading(false);

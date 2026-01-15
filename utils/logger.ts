@@ -64,7 +64,7 @@ export const logger = {
   error: (tag: string, message: string, error?: any, data?: any) => {
     if (shouldLog('error')) {
       const errorData = error instanceof Error 
-        ? { message: error.message, stack: error.stack, ...error }
+        ? { ...error, message: error.message, stack: error.stack }
         : error;
       console.error(formatMessage(tag, message, { error: errorData, ...data }));
     }

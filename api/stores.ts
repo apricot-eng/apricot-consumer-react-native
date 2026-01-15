@@ -45,7 +45,7 @@ export const getStoreById = async (id: number): Promise<Store> => {
     const response = await apiClient.get(`/stores/${id}`);
     return response.data;
   } catch (error: any) {
-    console.error('Error fetching store:', error);
+    logger.error('STORES_API', 'Error fetching store', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     

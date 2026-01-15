@@ -2,6 +2,7 @@ import { getSurpriseBags, SurpriseBag } from '@/api/surpriseBags';
 import SurpriseBagCard from '@/components/SurpriseBagCard';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { t } from '@/i18n';
+import { logger } from '@/utils/logger';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -31,7 +32,7 @@ export default function InicioScreen() {
       const data = await getSurpriseBags(currentNeighbourhood);
       setSurpriseBags(data);
     } catch (err: any) {
-      console.error('Error loading surprise bags:', err);
+      logger.error('INDEX_SCREEN', 'Error loading surprise bags', err);
       // Error toast is already shown by the API function
       setError(t('errors.loadSurpriseBags'));
     } finally {

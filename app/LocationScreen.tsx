@@ -1,26 +1,27 @@
 import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/locations';
 import { getStoresNearby, Store } from '@/api/stores';
+import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
+import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import { showSuccessToast } from '@/utils/toast';
-import { Ionicons } from '@expo/vector-icons';
-import { Camera, MapView, PointAnnotation } from '@maplibre/maplibre-react-native';
-import Slider from '@react-native-community/slider';
-import { Image as ExpoImage } from 'expo-image';
+import {
+  Camera,
+  Images,
+  MapView,
+  ShapeSource,
+  SymbolLayer
+} from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
-  ScrollView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,7 +67,7 @@ export default function LocationScreen() {
       const results = await searchLocations(query, 3); // Max 3 results
       setSearchResults(results);
     } catch (error) {
-      console.error('Error searching locations:', error);
+      logger.error('LOCATION_SCREEN', 'Error searching locations', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -220,7 +221,7 @@ export default function LocationScreen() {
         if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
           fetchStoresForCenter(mapCenter, distance);
         }
-        console.log("useFocusEffect called");
+        logger.debug('LOCATION_SCREEN', 'useFocusEffect called');
       }, 400); // Wait for map to initialize
 
       return () => clearTimeout(timer);
@@ -283,7 +284,7 @@ export default function LocationScreen() {
       // Fetch stores for new center with current distance (useEffect will also trigger, but this is intentional for immediate feedback)
       fetchStoresForCenter(newCenter, distance);
     } catch (error) {
-      console.error('Error getting current location:', error);
+      logger.error('LOCATION_SCREEN', 'Error getting current location', error);
       showSuccessToast('Error al obtener la ubicación');
     }
   };
@@ -312,12 +313,72 @@ export default function LocationScreen() {
       
       // Navigation will be handled by root layout detecting location change
     } catch (error) {
-      console.error('Error saving location:', error);
+      logger.error('LOCATION_SCREEN', 'Error saving location', error);
     } finally {
       setSaving(false);
     }
   };
 
+  // Handle distance slider completion (when user releases slider)
+  const handleDistanceSliderComplete = useCallback((value: number) => {
+    const newZoom = distanceToZoomLevel(value);
+    setMapZoom(newZoom);
+    
+    if (cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: mapCenter,
+        zoomLevel: newZoom,
+        animationDuration: 500,
+        animationMode: 'easeTo',
+      });
+    }
+    
+    // Refetch stores with new distance radius
+    if (mapCenter && isValidCoordinate(mapCenter[1], mapCenter[0])) {
+      fetchStoresForCenter(mapCenter, value);
+    }
+  }, [mapCenter, fetchStoresForCenter]);
+
+  // Get map pin component for rendering in PointAnnotation
+  const getMapPinComponent = useCallback((
+    id: string,
+    coordinate: [number, number],
+    pinImage: any,
+    name: string
+  ) => {
+    return (
+      <>
+      <Images images={pinImage} />
+
+      <ShapeSource
+        id={`${id}-shape`}
+        shape={{
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              id: id,
+              geometry: {
+                type: 'Point',
+                coordinates: coordinate,
+              },
+              properties: {},
+            } as GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonProperties>,
+          ],
+        }}
+      >
+        <SymbolLayer
+          id={`${id}-symbols`}
+          style={{
+            iconImage: pinImage,
+            iconSize: 0.3,
+            iconAllowOverlap: true,
+          }}
+        />
+      </ShapeSource>
+      </>
+    );
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -336,21 +397,6 @@ export default function LocationScreen() {
               zoomLevel: mapZoom,
             }}
           />
-
-          {/* Test pin in Palermo to verify map is working */}
-          <PointAnnotation
-            key="test-pin"
-            id="test-pin"
-            coordinate={[-58.4245236, -34.5803362]}
-          >
-            <View style={styles.pinContainer}>
-              <ExpoImage
-                source={getMapPinImage('cafe')}
-                style={styles.pinImage}
-                contentFit="contain"
-              />
-            </View>
-          </PointAnnotation>
 
           {/* Actual Store Pins */}
           {stores
@@ -375,20 +421,11 @@ export default function LocationScreen() {
                 category: store.category
               });
               const pinImage = getMapPinImage(store.category || 'cafe');
-              return (
-                <PointAnnotation
-                  key={store.id}
-                  id={`store-${store.id}`}
-                  coordinate={[store.longitude!, store.latitude!]}
-                >
-                  <View style={styles.pinContainer}>
-                    <ExpoImage
-                      source={pinImage}
-                      style={styles.pinImage}
-                      contentFit="contain"
-                    />
-                  </View>
-                </PointAnnotation>
+              return getMapPinComponent(
+                `store-${store.id}`,
+                [store.longitude!, store.latitude!],
+                pinImage,
+                store.category || 'restaurante',
               );
             })}
         </MapView>
@@ -402,93 +439,19 @@ export default function LocationScreen() {
       </View>
 
       {/* Bottom Sheet */}
-      <View style={styles.bottomSheet}>
-        <ScrollView
-          style={styles.bottomSheetContent}
-          contentContainerStyle={styles.bottomSheetScrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Distance Slider */}
-          <View style={styles.sliderContainer}>
-            <Text style={styles.sliderLabel}>{t('location.distanceLabel')}</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={50}
-              value={distance}
-              onValueChange={setDistance}
-              minimumTrackTintColor="#794509"
-              maximumTrackTintColor="#e0e0e0"
-              thumbTintColor="#794509"
-            />
-            <Text style={styles.distanceValue}>{Math.round(distance)} km</Text>
-          </View>
-
-          {/* Search Input */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('location.searchPlaceholder')}
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {isSearching && (
-              <ActivityIndicator size="small" color="#666" style={styles.searchLoader} />
-            )}
-
-            {/* Predictive Search Overlay */}
-            {searchResults.length > 0 && (
-              <View style={styles.searchResults}>
-                {searchResults.map((result) => (
-                  <TouchableOpacity
-                    key={result.id}
-                    style={styles.searchResultItem}
-                    onPress={() => handleLocationSelect(result)}
-                  >
-                    <Ionicons name="location" size={16} color="#794509" />
-                    <Text style={styles.searchResultText} numberOfLines={1}>
-                      {result.display_name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-            {searchQuery.trim() && searchResults.length === 0 && !isSearching && (
-              <View style={styles.searchResults}>
-                <Text style={styles.noResultsText}>{t('location.noResults')}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Use Current Location */}
-          <TouchableOpacity
-            style={styles.currentLocationButton}
-            onPress={handleUseCurrentLocation}
-          >
-            <Ionicons name="compass" size={20} color="#794509" />
-            <Text style={styles.currentLocationText}>
-              {t('location.useCurrentLocation')}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Select Button */}
-          <TouchableOpacity
-            style={[styles.selectButton, saving && styles.selectButtonDisabled]}
-            onPress={handleSelect}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.selectButtonText}>{t('location.select')}</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+      <LocationActionSheet
+        distance={distance}
+        onDistanceChange={setDistance}
+        onDistanceSliderComplete={handleDistanceSliderComplete}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        isSearching={isSearching}
+        searchResults={searchResults}
+        onLocationSelect={handleLocationSelect}
+        onUseCurrentLocation={handleUseCurrentLocation}
+        onSelect={handleSelect}
+        saving={saving}
+      />
     </SafeAreaView>
   );
 }

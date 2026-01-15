@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export enum ErrorType {
   NETWORK = 'network',
   SERVER = 'server',
@@ -16,7 +18,7 @@ export const getErrorType = (error: any): ErrorType => {
         error.code === 'ECONNABORTED') {
       return ErrorType.NETWORK;
     }
-    console.log("getErrorType unknown error", error);
+    logger.debug('ERROR_UTIL', 'getErrorType unknown error', error);
     // TODO: handle this error better. Map Bounds error gets caught here.
     return ErrorType.UNKNOWN;
   }

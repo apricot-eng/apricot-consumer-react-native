@@ -7,15 +7,15 @@ export const getMapPinImage = (category: string): any => {
   const normalizedCategory = category.toLowerCase().trim();
   
   const categoryMap: Record<string, any> = {
-    'cafe': require('@/assets/images/map-pins/cafe.svg'),
-    'verduleria': require('@/assets/images/map-pins/verduleria.svg'),
-    'heladeria': require('@/assets/images/map-pins/heladeria.svg'),
-    'panaderia': require('@/assets/images/map-pins/panaderia.svg'),
-    'pescaderia': require('@/assets/images/map-pins/pescaderia.svg'),
-    'fiambreria': require('@/assets/images/map-pins/fiambreria.svg'),
-    'floreria': require('@/assets/images/map-pins/floreria.svg'),
-    'restaurante': require('@/assets/images/map-pins/restaurante.svg'),
-    'sushi': require('@/assets/images/map-pins/sushi.svg'),
+    'cafe': require('@/assets/images/map-pins/cafe.png'),
+    'verduleria': require('@/assets/images/map-pins/verduleria.png'),
+    'heladeria': require('@/assets/images/map-pins/heladeria.png'),
+    'panaderia': require('@/assets/images/map-pins/panaderia.png'),
+    'pescaderia': require('@/assets/images/map-pins/pescaderia.png'),
+    'fiambreria': require('@/assets/images/map-pins/fiambreria.png'),
+    'floreria': require('@/assets/images/map-pins/floreria.png'),
+    'restaurante': require('@/assets/images/map-pins/restaurante.png'),
+    'sushi': require('@/assets/images/map-pins/sushi.png'),
   };
 
   return categoryMap[normalizedCategory] || categoryMap['cafe']; // Default to cafe pin if category not found

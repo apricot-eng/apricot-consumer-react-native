@@ -1,4 +1,5 @@
 import { getErrorType } from '@/utils/error';
+import { logger } from '@/utils/logger';
 import { showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
@@ -73,7 +74,7 @@ export const searchLocations = async (
     const response = await apiClient.get(`/locations/search?${params.toString()}`);
     return response.data;
   } catch (error: any) {
-    console.error('Error searching locations:', error);
+    logger.error('LOCATIONS_API', 'Error searching locations', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     throw error;
@@ -92,7 +93,7 @@ export const saveUserLocation = async (
     const response = await apiClient.post('/user/location', locationData);
     return response.data;
   } catch (error: any) {
-    console.error('Error saving user location:', error);
+    logger.error('LOCATIONS_API', 'Error saving user location', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     throw error;
@@ -112,7 +113,7 @@ export const getUserLocation = async (): Promise<UserLocation | null> => {
     if (error.response?.status === 404) {
       return null;
     }
-    console.error('Error fetching user location:', error);
+    logger.error('LOCATIONS_API', 'Error fetching user location', error);
     const errorType = getErrorType(error);
     // Commented out showErrorToast in an error that should fail silently.
     // showErrorToast(errorType);
