@@ -291,6 +291,10 @@ export default function LocationScreen() {
 
   // Handle select button
   const handleSelect = async () => {
+    /* TODO: Here we need to save whatever bounds are set on the map.
+     * So selectedLocation must have a value of some sort, because we're displaying
+     * something on the map already.
+     */
     if (!selectedLocation) {
       showSuccessToast(t('location.selectLocation'));
       return;
