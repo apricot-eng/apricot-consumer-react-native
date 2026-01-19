@@ -131,7 +131,7 @@ export default function LocationScreen() {
           id: store.id,
           name: store.store_name,
           lat: store.latitude,
-          lon: store.longitude,
+          long: store.longitude,
           category: store.category,
           hasValidCoords: isValidCoordinate(store.latitude, store.longitude)
         }))
@@ -272,7 +272,7 @@ export default function LocationScreen() {
         id: 'current',
         display_name: 'Mi ubicación actual',
         lat: latitude,
-        lon: longitude,
+        long: longitude,
         place_id: '',
         address: {},
       });
@@ -307,7 +307,7 @@ export default function LocationScreen() {
       setSaving(true);
       await saveUserLocation({
         lat: selectedLocation.lat,
-        lon: selectedLocation.lon,
+        long: selectedLocation.long,
         place_id: selectedLocation.place_id,
         display_name: selectedLocation.display_name,
         address_components: selectedLocation.address,
@@ -316,7 +316,7 @@ export default function LocationScreen() {
       // Create cached location object
       const cachedLocation: CachedLocation = {
         lat: selectedLocation.lat,
-        long: selectedLocation.lon,
+        long: selectedLocation.long,
         place_id: selectedLocation.place_id || null,
         display_name: selectedLocation.display_name,
         address_components: {
@@ -425,7 +425,7 @@ export default function LocationScreen() {
                   storeId: store.id,
                   storeName: store.store_name,
                   lat: store.latitude,
-                  lon: store.longitude
+                  long: store.longitude
                 });
               }
               return isValid;
@@ -435,7 +435,7 @@ export default function LocationScreen() {
                 storeId: store.id,
                 storeName: store.store_name,
                 lat: store.latitude,
-                lon: store.longitude,
+                long: store.longitude,
                 category: store.category
               });
               const pinImage = getMapPinImage(store.category || 'cafe');

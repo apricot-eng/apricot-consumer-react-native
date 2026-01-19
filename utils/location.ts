@@ -7,16 +7,16 @@ import { logger } from '@/utils/logger';
  * Validates coordinates to ensure they are valid for MapLibre
  * MapLibre requires valid, finite numbers within coordinate ranges
  * @param lat - Latitude value
- * @param lon - Longitude value
+ * @param long - Longitude value
  * @returns true if coordinates are valid, false otherwise
  */
-export const isValidCoordinate = (lat?: number, lon?: number): boolean => {
-  if (lat === undefined || lon === undefined) return false;
-  if (typeof lat !== 'number' || typeof lon !== 'number') return false;
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+export const isValidCoordinate = (lat?: number, long?: number): boolean => {
+  if (lat === undefined || long === undefined) return false;
+  if (typeof lat !== 'number' || typeof long !== 'number') return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(long)) return false;
   // Valid latitude range: -90 to 90
   // Valid longitude range: -180 to 180
-  return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+  return lat >= -90 && lat <= 90 && long >= -180 && long <= 180;
 };
 
 /**
@@ -70,20 +70,20 @@ export const validateAndConvertCoordinates = (
   location: LocationSearchResult
 ): [number, number] | null => {
   const lat = Number(location.lat);
-  const lon = Number(location.lon);
+  const long = Number(location.long);
   
-  if (!isValidCoordinate(lat, lon)) {
+  if (!isValidCoordinate(lat, long)) {
     logger.error('LOCATION_UTILS', 'Invalid coordinates from search result', {
       lat: location.lat,
-      lon: location.lon,
+      long: location.long,
       display_name: location.display_name,
       convertedLat: lat,
-      convertedLon: lon
+      convertedLong: long
     });
     return null;
   }
 
-  return [lon, lat];
+  return [long, lat];
 };
 
 /**
@@ -93,10 +93,10 @@ export const validateAndConvertCoordinates = (
 export const getDefaultUserLocation = (): UserLocation => ({
   location_id: 0,
   lat: DEFAULT_LOCATION.lat,
-  lon: DEFAULT_LOCATION.lon,
+  long: DEFAULT_LOCATION.long,
   location: {
     lat: DEFAULT_LOCATION.lat,
-    lon: DEFAULT_LOCATION.lon,
+    long: DEFAULT_LOCATION.long,
     display_name: DEFAULT_LOCATION.display_name,
     address: {
       neighbourhood: DEFAULT_LOCATION.neighbourhood,

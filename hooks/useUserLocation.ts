@@ -33,7 +33,7 @@ export interface UseUserLocationResult {
  */
 const DEFAULT_LOCATION_OBJECT: CachedLocation = {
   lat: DEFAULT_LOCATION.lat,
-  long: DEFAULT_LOCATION.lon,
+  long: DEFAULT_LOCATION.long,
   place_id: null,
   display_name: DEFAULT_LOCATION.display_name,
   address_components: {
@@ -48,7 +48,7 @@ const DEFAULT_LOCATION_OBJECT: CachedLocation = {
 const userLocationToCached = (userLocation: UserLocation): CachedLocation => {
   return {
     lat: userLocation.lat,
-    long: userLocation.lon,
+    long: userLocation.long,
     place_id: userLocation.location.place_id || null,
     display_name: userLocation.location.display_name,
     address_components: {
@@ -203,7 +203,7 @@ export const useUserLocation = (): UseUserLocationResult => {
       try {
         await saveUserLocation({
           lat: DEFAULT_LOCATION.lat,
-          lon: DEFAULT_LOCATION.lon,
+          long: DEFAULT_LOCATION.long,
           place_id: DEFAULT_LOCATION.place_id || undefined,
           display_name: DEFAULT_LOCATION.display_name,
           address_components: {

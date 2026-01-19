@@ -1,5 +1,5 @@
-import { logger } from '@/utils/logger';
 import { getErrorType } from '@/utils/error';
+import { logger } from '@/utils/logger';
 import { showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
@@ -37,7 +37,7 @@ export interface MapBounds {
 
 export interface UserLocationCoords {
   lat: number;
-  lon: number;
+  long: number;
 }
 
 export const getStoreById = async (id: number): Promise<Store> => {
@@ -90,11 +90,11 @@ export const getStoresNearby = async (
     params.append('west', bounds.west.toString());
     
     if (userLocation) {
-      if (userLocation.lat === undefined || userLocation.lon === undefined) {
+      if (userLocation.lat === undefined || userLocation.long === undefined) {
         logger.warn('STORES_API', 'Invalid user location coordinates', userLocation);
       } else {
         params.append('lat', userLocation.lat.toString());
-        params.append('lon', userLocation.lon.toString());
+        params.append('long', userLocation.long.toString());
       }
     }
 

@@ -5,7 +5,7 @@
 
 export const DEFAULT_LOCATION = {
     lat: -34.5912554,
-    lon: -58.4280328,
+    long: -58.4280328,
     display_name: 'Palermo, Buenos Aires, Argentina',
     neighbourhood: 'Palermo',
     city: 'Buenos Aires',

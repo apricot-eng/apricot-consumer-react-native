@@ -7,7 +7,7 @@ export interface LocationSearchResult {
   id: string;
   display_name: string;
   lat: number;
-  lon: number;
+  long: number;
   place_id: string | null;
   address: {
     neighbourhood?: string;
@@ -23,10 +23,10 @@ export interface LocationSearchResult {
 export interface UserLocation {
   location_id: number;
   lat: number;
-  lon: number;
+  long: number;
   location: {
     lat: number;
-    lon: number;
+    long: number;
     display_name: string;
     address: {
       neighbourhood?: string;
@@ -44,7 +44,7 @@ export interface UserLocation {
 
 export interface SaveLocationData {
   lat: number;
-  lon: number;
+  long: number;
   place_id?: string | null;
   display_name?: string;
   address_components?: {
