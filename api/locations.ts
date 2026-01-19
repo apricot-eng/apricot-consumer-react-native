@@ -22,6 +22,7 @@ export interface UserLocation extends Coordinates {
 
 /**
  * Search for locations using predictive search
+ * Results are restricted to Argentina only.
  * @param query - Search query (e.g., "Palermo", "Av. Santa Fe 123")
  * @param limit - Maximum number of results (default: 10, max: 20)
  * @returns Array of location search results
@@ -36,6 +37,8 @@ export const searchLocations = async (
     if (limit) {
       params.append('limit', limit.toString());
     }
+    // Restrict results to Argentina only
+    params.append('countrycodes', 'ar');
 
     const response = await apiClient.get(`/locations/search?${params.toString()}`);
     return response.data;
