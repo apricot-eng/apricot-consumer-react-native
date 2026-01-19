@@ -47,9 +47,20 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Skip logging 401 errors for location endpoints (guest users)
+    //TODO: Temporary fix to avoid logging 401 errors for location endpoints (guest users).
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+    const isLocationEndpoint = url.includes('/user/location');
+    
+    if (status === 401 && isLocationEndpoint) {
+      // Fail silently for guest users on location endpoints
+      return Promise.reject(error);
+    }
+    
     logger.api.error(
       error.config?.method?.toUpperCase() || 'GET',
-      `${error.config?.baseURL || ''}${error.config?.url || ''}`,
+      `${error.config?.baseURL || ''}${url}`,
       error
     );
     return Promise.reject(error);

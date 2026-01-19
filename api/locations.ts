@@ -93,6 +93,14 @@ export const saveUserLocation = async (
     const response = await apiClient.post('/user/location', locationData);
     return response.data;
   } catch (error: any) {
+    const code = error.response?.status;
+    // 401 means user is a guest (not authenticated) - fail silently
+    if (code === 401) {
+      // Return a promise that resolves to null or throw a silent error
+      // Since this is a save operation, we'll throw but silently
+      throw error;
+    }
+    // For other errors, log and show toast
     logger.error('LOCATIONS_API', 'Error saving user location', error);
     const errorType = getErrorType(error);
     showErrorToast(errorType);
@@ -109,15 +117,19 @@ export const getUserLocation = async (): Promise<UserLocation | null> => {
     const response = await apiClient.get('/user/location');
     return response.data;
   } catch (error: any) {
+    const code = error.response?.status;
     // 404 means no location is set, which is expected
-    if (error.response?.status === 404) {
+    if (code === 404) {
       return null;
     }
+    // 401 means user is a guest (not authenticated) - fail silently
+    if (code === 401) {
+      return null;
+    }
+    // For other errors, log and throw
     logger.error('LOCATIONS_API', 'Error fetching user location', error);
     const errorType = getErrorType(error);
-    // Commented out showErrorToast in an error that should fail silently.
-    // showErrorToast(errorType);
-    // We don't throw an error, the user has never had their location set.
+    showErrorToast(errorType);
     throw error;
   }
 };

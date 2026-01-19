@@ -20,7 +20,7 @@ const getConfig = (): LogConfig => {
   return {
     enabled: envEnabled !== 'false', // Default to true in dev
     verbose: envVerbose === 'true' || __DEV__, // Verbose in dev by default
-    level: (process.env.EXPO_PUBLIC_LOG_LEVEL as LogLevel) || 'debug',
+    level: (process.env.EXPO_PUBLIC_LOG_LEVEL as LogLevel) || 'error',
   };
 };
 
@@ -66,7 +66,7 @@ export const logger = {
       const errorData = error instanceof Error 
         ? { ...error, message: error.message, stack: error.stack }
         : error;
-      console.error(formatMessage(tag, message, { error: errorData, ...data }));
+      console.error("ERROR at logger level: "+formatMessage(tag, message, { error: errorData, ...data }));
     }
   },
   
