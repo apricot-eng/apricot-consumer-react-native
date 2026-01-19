@@ -192,8 +192,78 @@ This is a React Native food delivery/surprise bag service app called "Apricot" b
 - Don't use class components
 - Don't ignore TypeScript errors
 
+## Function Size & Refactor Guidelines (Cursor)
 
+* Do **not** enforce a global max line count for functions
+* Use **function intent and file location** to guide refactoring
+* Prefer **clarity and single responsibility** over minimizing lines
 
+### `/utils`
 
+* Keep utility functions **small and pure**
+* Target **~3–10 lines**
+* Suggest refactor if a utility:
 
+  * Exceeds ~10 lines
+  * Contains side effects
+  * Mixes formatting with business logic
+* Extract helpers instead of adding branching
 
+---
+
+### Domain logic (`/api`, `/hooks`, `/contexts`)
+
+* Target **~10–30 lines**
+* Allow branching and async logic
+* Suggest refactor if a function:
+
+  * Exceeds ~30 lines
+  * Mixes validation, transformation, and fetching
+  * Has deep nesting
+* Keep main function as orchestration; extract helpers
+
+---
+
+### Orchestration / Screens
+
+* Allow **larger, linear functions**
+* Target **~20–50 lines**
+* Prefer readable top-down flows
+* Suggest refactor if:
+
+  * UI logic and business logic are tightly coupled
+  * Async flows are nested or duplicated
+* Extract domain logic, not orchestration
+
+---
+
+### React Hooks & Handlers
+
+* Target **~10–40 lines**
+* Hooks may contain multiple effects
+* Suggest refactor if:
+
+  * Multiple concerns are handled in one hook
+  * Effects become hard to reason about
+* Prefer internal helpers over micro-hooks
+
+---
+
+### Refactor Signals (All Files)
+
+* Suggest refactor if:
+
+  * Function name contains `and`, `or`, `then`
+  * Comments explain *what* instead of *why*
+  * Nesting reduces readability
+  * Testing requires excessive mocking
+* Do not split functions solely to reduce line count
+
+---
+
+### Cursor Behavior
+
+* Prefer meaningful helper extraction
+* Avoid creating tiny functions with unclear names
+* A longer function with clear intent is acceptable
+* Follow existing architectural patterns
