@@ -1,47 +1,24 @@
-import { LocationData } from '@/types/location';
+import { Address, Coordinates, LocationData, NominatimMetadata } from '@/types/location';
 import { getErrorType } from '@/utils/error';
 import { logger } from '@/utils/logger';
 import { showErrorToast } from '@/utils/toast';
 import apiClient from './client';
 
-export interface LocationSearchResult {
+export interface LocationSearchResult extends Coordinates, NominatimMetadata {
   id: string;
-  display_name: string;
-  lat: number;
-  long: number;
-  place_id: string | null;
-  address: {
-    neighbourhood?: string;
-    suburb?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-  };
-  osm_type?: string;
-  osm_id?: number;
+  address: Address;
 }
-
-export interface UserLocation {
+export interface UserLocation extends Coordinates {
   location_id: number;
-  lat: number;
-  long: number;
-  location: {
-    lat: number;
-    long: number;
+
+  location: Coordinates & NominatimMetadata & {
     display_name: string;
-    address: {
-      neighbourhood?: string;
-      suburb?: string;
-      city?: string;
-      state?: string;
-      country?: string;
-    };
-    place_id?: string | null;
-    osm_type?: string;
-    osm_id?: number;
+    address: Address;
   };
+
   nominatim_place_id?: string;
 }
+
 
 /**
  * Search for locations using predictive search
