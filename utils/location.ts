@@ -1,6 +1,7 @@
 import { LocationSearchResult, UserLocation } from '@/api/locations';
 import { MapBounds } from '@/api/stores';
 import { DEFAULT_LOCATION } from '@/constants/location';
+import { LocationData } from '@/types/location';
 import { logger } from '@/utils/logger';
 
 /**
@@ -107,3 +108,23 @@ export const getDefaultUserLocation = (): UserLocation => ({
     place_id: DEFAULT_LOCATION.place_id,
   },
 });
+
+/**
+ * Converts a LocationSearchResult to LocationData format
+ * @param selectedLocation - Location search result to convert
+ * @returns LocationData object ready for saving
+ */
+export const locationSearchResultToLocationData = (
+  selectedLocation: LocationSearchResult
+): LocationData => {
+  return {
+    lat: selectedLocation.lat,
+    long: selectedLocation.long,
+    place_id: selectedLocation.place_id,
+    display_name: selectedLocation.display_name,
+    address_components: {
+      neighbourhood: selectedLocation.address.neighbourhood,
+      city: selectedLocation.address.city,
+    },
+  };
+};

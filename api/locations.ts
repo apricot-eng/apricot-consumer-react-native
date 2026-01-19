@@ -1,3 +1,4 @@
+import { LocationData } from '@/types/location';
 import { getErrorType } from '@/utils/error';
 import { logger } from '@/utils/logger';
 import { showErrorToast } from '@/utils/toast';
@@ -42,18 +43,6 @@ export interface UserLocation {
   nominatim_place_id?: string;
 }
 
-export interface SaveLocationData {
-  lat: number;
-  long: number;
-  place_id?: string | null;
-  display_name?: string;
-  address_components?: {
-    neighbourhood?: string;
-    city?: string;
-    [key: string]: any;
-  };
-}
-
 /**
  * Search for locations using predictive search
  * @param query - Search query (e.g., "Palermo", "Av. Santa Fe 123")
@@ -86,8 +75,8 @@ export const searchLocations = async (
  * @param locationData - Location data to save
  * @returns Saved user location
  */
-export const saveUserLocation = async (
-  locationData: SaveLocationData
+export const saveUserLocationApi = async (
+  locationData: LocationData
 ): Promise<UserLocation> => {
   try {
     const response = await apiClient.post('/user/location', locationData);

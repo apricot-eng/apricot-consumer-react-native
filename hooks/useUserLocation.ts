@@ -1,26 +1,12 @@
-import { getUserLocation, saveUserLocation, UserLocation } from '@/api/locations';
+import { getUserLocation, saveUserLocationApi, UserLocation } from '@/api/locations';
 import { DEFAULT_LOCATION } from '@/constants/location';
 import { LocationContext } from '@/contexts/LocationContext';
+import { LocationData } from '@/types/location';
 import { logger } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext, useEffect, useState } from 'react';
 
 const CACHED_LOCATION_KEY = 'user_location_cached';
-
-/**
- * Cached location object structure
- * Matches the format stored in AsyncStorage
- */
-export interface CachedLocation {
-  lat: number;
-  long: number;
-  place_id: string | null;
-  display_name: string;
-  address_components: {
-    neighbourhood: string;
-    city: string;
-  };
-}
 
 export interface UseUserLocationResult {
   hasLocation: boolean;
@@ -31,7 +17,7 @@ export interface UseUserLocationResult {
 /**
  * Default location object for Palermo, Buenos Aires
  */
-const DEFAULT_LOCATION_OBJECT: CachedLocation = {
+const DEFAULT_LOCATION_OBJECT: LocationData = {
   lat: DEFAULT_LOCATION.lat,
   long: DEFAULT_LOCATION.long,
   place_id: null,
@@ -43,9 +29,9 @@ const DEFAULT_LOCATION_OBJECT: CachedLocation = {
 };
 
 /**
- * Converts API UserLocation to CachedLocation format
+ * Converts API UserLocation to LocationData format
  */
-const userLocationToCached = (userLocation: UserLocation): CachedLocation => {
+const userLocationToLocationData = (userLocation: UserLocation): LocationData => {
   return {
     lat: userLocation.lat,
     long: userLocation.long,
@@ -61,7 +47,7 @@ const userLocationToCached = (userLocation: UserLocation): CachedLocation => {
 /**
  * Saves location object to AsyncStorage
  */
-const saveCachedLocation = async (location: CachedLocation): Promise<void> => {
+const saveCachedLocation = async (location: LocationData): Promise<void> => {
   try {
     await AsyncStorage.setItem(CACHED_LOCATION_KEY, JSON.stringify(location));
   } catch (error) {
@@ -73,13 +59,13 @@ const saveCachedLocation = async (location: CachedLocation): Promise<void> => {
 /**
  * Loads location object from AsyncStorage
  */
-const loadCachedLocation = async (): Promise<CachedLocation | null> => {
+const loadCachedLocation = async (): Promise<LocationData | null> => {
   try {
     const cached = await AsyncStorage.getItem(CACHED_LOCATION_KEY);
     if (!cached) {
       return null;
     }
-    return JSON.parse(cached) as CachedLocation;
+    return JSON.parse(cached) as LocationData;
   } catch (error) {
     logger.error('USE_USER_LOCATION', 'Failed to load cached location', error);
     return null;
@@ -99,7 +85,7 @@ export const useUserLocation = (): UseUserLocationResult => {
   /**
    * Sets the location state and persists it to AsyncStorage
    */
-  const setLocationState = async (location: CachedLocation) => {
+  const setLocationState = async (location: LocationData) => {
     setHasLocation(true);
     await saveCachedLocation(location);
   };
@@ -107,14 +93,14 @@ export const useUserLocation = (): UseUserLocationResult => {
   /**
    * Verifies location with API and updates cached location accordingly
    */
-  const verifyLocationWithAPI = async (): Promise<CachedLocation | null> => {
+  const verifyLocationWithAPI = async (): Promise<LocationData | null> => {
     try {
       const userLocation = await getUserLocation();
       if (userLocation) {
-        const cachedLocation = userLocationToCached(userLocation);
+        const locationData = userLocationToLocationData(userLocation);
         // Save the location from API to cache
-        await saveCachedLocation(cachedLocation);
-        return cachedLocation;
+        await saveCachedLocation(locationData);
+        return locationData;
       }
       return null;
     } catch (error: any) {
@@ -126,7 +112,7 @@ export const useUserLocation = (): UseUserLocationResult => {
   /**
    * Handles the case when we have a cached location value
    */
-  const handleCachedLocation = async (cachedLocation: CachedLocation) => {
+  const handleCachedLocation = async (cachedLocation: LocationData) => {
     const apiLocation = await verifyLocationWithAPI();
     if (apiLocation !== null) {
       // API call succeeded - use API location (it's the source of truth)
@@ -201,7 +187,7 @@ export const useUserLocation = (): UseUserLocationResult => {
       
       // Try to save default location to API
       try {
-        await saveUserLocation({
+        await saveUserLocationApi({
           lat: DEFAULT_LOCATION.lat,
           long: DEFAULT_LOCATION.long,
           place_id: DEFAULT_LOCATION.place_id || undefined,
@@ -242,6 +228,6 @@ export const useUserLocation = (): UseUserLocationResult => {
  * Mark location as set in AsyncStorage by saving the location object
  * Call this after successfully saving a location
  */
-export const markLocationAsSet = async (location: CachedLocation) => {
+export const cacheUserLocation = async (location: LocationData) => {
   await saveCachedLocation(location);
 };

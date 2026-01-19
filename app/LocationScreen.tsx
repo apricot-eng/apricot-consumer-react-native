@@ -1,10 +1,10 @@
-import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/locations';
+import { LocationSearchResult, saveUserLocationApi, searchLocations } from '@/api/locations';
 import { getStoresNearby, Store } from '@/api/stores';
 import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
-import { CachedLocation, markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
+import { cacheUserLocation, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate, validateAndConvertCoordinates } from '@/utils/location';
+import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate, locationSearchResultToLocationData, validateAndConvertCoordinates } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
 import {
@@ -305,27 +305,9 @@ export default function LocationScreen() {
 
     try {
       setSaving(true);
-      await saveUserLocation({
-        lat: selectedLocation.lat,
-        long: selectedLocation.long,
-        place_id: selectedLocation.place_id,
-        display_name: selectedLocation.display_name,
-        address_components: selectedLocation.address,
-      });
-
-      // Create cached location object
-      const cachedLocation: CachedLocation = {
-        lat: selectedLocation.lat,
-        long: selectedLocation.long,
-        place_id: selectedLocation.place_id || null,
-        display_name: selectedLocation.display_name,
-        address_components: {
-          neighbourhood: selectedLocation.address.neighbourhood || '',
-          city: selectedLocation.address.city || '',
-        },
-      };
-
-      await markLocationAsSet(cachedLocation);
+      const locationData = locationSearchResultToLocationData(selectedLocation);
+      await saveUserLocationApi(locationData);
+      await cacheUserLocation(locationData);
       await refresh();
       triggerRefresh(); // Trigger root layout refresh
       
