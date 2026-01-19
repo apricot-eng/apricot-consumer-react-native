@@ -363,7 +363,7 @@ export default function LocationScreen() {
     name: string
   ) => {
     return (
-      <>
+      <React.Fragment key={id}>
       <Images images={pinImage} />
 
       <ShapeSource
@@ -392,7 +392,7 @@ export default function LocationScreen() {
           }}
         />
       </ShapeSource>
-      </>
+      </React.Fragment>
     );
   }, []);
 
