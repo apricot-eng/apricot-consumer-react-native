@@ -1,4 +1,6 @@
+import { UserLocation } from '@/api/locations';
 import { MapBounds } from '@/api/stores';
+import { DEFAULT_LOCATION } from '@/constants/location';
 
 /**
  * Validates coordinates to ensure they are valid for MapLibre
@@ -56,3 +58,25 @@ export const distanceToZoomLevel = (distanceKm: number): number => {
   if (distanceKm <= 20) return 12;
   return 11; // For 20-50km
 };
+
+/**
+ * Creates a UserLocation object with default location values
+ * @returns UserLocation object with DEFAULT_LOCATION values
+ */
+export const getDefaultUserLocation = (): UserLocation => ({
+  location_id: 0,
+  lat: DEFAULT_LOCATION.lat,
+  lon: DEFAULT_LOCATION.lon,
+  location: {
+    lat: DEFAULT_LOCATION.lat,
+    lon: DEFAULT_LOCATION.lon,
+    display_name: DEFAULT_LOCATION.display_name,
+    address: {
+      neighbourhood: DEFAULT_LOCATION.neighbourhood,
+      city: DEFAULT_LOCATION.city,
+      state: DEFAULT_LOCATION.state,
+      country: DEFAULT_LOCATION.country,
+    },
+    place_id: DEFAULT_LOCATION.place_id,
+  },
+});
