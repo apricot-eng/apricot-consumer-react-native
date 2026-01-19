@@ -1,6 +1,7 @@
-import { UserLocation } from '@/api/locations';
+import { LocationSearchResult, UserLocation } from '@/api/locations';
 import { MapBounds } from '@/api/stores';
 import { DEFAULT_LOCATION } from '@/constants/location';
+import { logger } from '@/utils/logger';
 
 /**
  * Validates coordinates to ensure they are valid for MapLibre
@@ -57,6 +58,32 @@ export const distanceToZoomLevel = (distanceKm: number): number => {
   if (distanceKm <= 10) return 13;
   if (distanceKm <= 20) return 12;
   return 11; // For 20-50km
+};
+
+/**
+ * Validates and converts coordinates from a LocationSearchResult
+ * Logs errors if coordinates are invalid but does not show user-facing toasts
+ * @param location - LocationSearchResult to validate
+ * @returns Valid coordinate tuple [longitude, latitude] or null if invalid
+ */
+export const validateAndConvertCoordinates = (
+  location: LocationSearchResult
+): [number, number] | null => {
+  const lat = Number(location.lat);
+  const lon = Number(location.lon);
+  
+  if (!isValidCoordinate(lat, lon)) {
+    logger.error('LOCATION_UTILS', 'Invalid coordinates from search result', {
+      lat: location.lat,
+      lon: location.lon,
+      display_name: location.display_name,
+      convertedLat: lat,
+      convertedLon: lon
+    });
+    return null;
+  }
+
+  return [lon, lat];
 };
 
 /**

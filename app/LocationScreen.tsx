@@ -4,10 +4,9 @@ import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { CachedLocation, markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } from '@/utils/location';
+import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate, validateAndConvertCoordinates } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
-import { showSuccessToast } from '@/utils/toast';
 import {
   Camera,
   Images,
@@ -235,8 +234,13 @@ export default function LocationScreen() {
     setSearchResults([]);
     Keyboard.dismiss();
 
+    // Convert and validate coordinates
+    const newCenter = validateAndConvertCoordinates(location);
+    if (!newCenter) {
+      return;
+    }
+
     // Center map on selected location
-    const newCenter: [number, number] = [location.lon, location.lat];
     setMapCenter(newCenter);
     if (cameraRef.current) {
       cameraRef.current.setCamera({
@@ -255,7 +259,7 @@ export default function LocationScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        showSuccessToast('Permisos de ubicación denegados');
+        logger.warn('LOCATION_SCREEN', 'Location permissions denied');
         return;
       }
 
@@ -285,7 +289,6 @@ export default function LocationScreen() {
       fetchStoresForCenter(newCenter, distance);
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error getting current location', error);
-      showSuccessToast('Error al obtener la ubicación');
     }
   };
 
@@ -296,7 +299,7 @@ export default function LocationScreen() {
      * something on the map already.
      */
     if (!selectedLocation) {
-      showSuccessToast(t('location.selectLocation'));
+      logger.warn('LOCATION_SCREEN', 'No location selected');
       return;
     }
 
@@ -325,7 +328,6 @@ export default function LocationScreen() {
       await markLocationAsSet(cachedLocation);
       await refresh();
       triggerRefresh(); // Trigger root layout refresh
-      showSuccessToast('Ubicación guardada');
       
       // Navigation will be handled by root layout detecting location change
     } catch (error) {
