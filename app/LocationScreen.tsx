@@ -2,7 +2,7 @@ import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/l
 import { getStoresNearby, Store } from '@/api/stores';
 import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
-import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
+import { CachedLocation, markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
 import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
@@ -310,7 +310,19 @@ export default function LocationScreen() {
         address_components: selectedLocation.address,
       });
 
-      await markLocationAsSet();
+      // Create cached location object
+      const cachedLocation: CachedLocation = {
+        lat: selectedLocation.lat,
+        long: selectedLocation.lon,
+        place_id: selectedLocation.place_id || null,
+        display_name: selectedLocation.display_name,
+        address_components: {
+          neighbourhood: selectedLocation.address.neighbourhood || '',
+          city: selectedLocation.address.city || '',
+        },
+      };
+
+      await markLocationAsSet(cachedLocation);
       await refresh();
       triggerRefresh(); // Trigger root layout refresh
       showSuccessToast('Ubicación guardada');
