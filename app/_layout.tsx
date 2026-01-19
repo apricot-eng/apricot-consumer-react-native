@@ -56,7 +56,9 @@ export default function RootLayout() {
             <Stack.Screen 
               name="LocationScreen" 
               options={{ 
-                presentation: 'modal',
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+                gestureDirection: 'vertical',
                 headerShown: false,
               }} 
             />

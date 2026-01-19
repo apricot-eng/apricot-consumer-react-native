@@ -17,7 +17,7 @@ import {
   SymbolLayer
 } from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -37,6 +37,7 @@ const DEFAULT_ZOOM = 12;
 const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v2/style.json?key=RqClR17cITmceexTV2AF';
 
 export default function LocationScreen() {
+  const router = useRouter();
   const { refresh } = useUserLocation();
   const { triggerRefresh } = useLocationContext();
   const mapRef = useRef<React.ComponentRef<typeof MapView>>(null);
@@ -232,7 +233,7 @@ export default function LocationScreen() {
   // Handle location selection from search
   const handleLocationSelect = (location: LocationSearchResult) => {
     setSelectedLocation(location);
-    setSearchQuery(location.display_name);
+    setSearchQuery(location.display_name ?? '');
     setSearchResults([]);
     Keyboard.dismiss();
 
@@ -308,16 +309,31 @@ export default function LocationScreen() {
     setSaving(true);
     const locationData = locationSearchResultToLocationData(selectedLocation);
     
-    // Try to save via API - fail silently for guest users
+    // Try to save via API - track if it succeeds or fails silently (401 for guest users)
+    let apiSaveSucceeded = false;
+    let apiSaveFailedWithNonGuestError = false;
     try {
       await saveUserLocationApi(locationData);
-    } catch (error) {
-      logger.warn('LOCATION_SCREEN', 'Failed to save location to API (guest user or network issue)', error);
+      apiSaveSucceeded = true;
+    } catch (error: any) {
+      const code = error.response?.status;
+      // 401 means user is a guest (not authenticated) - fail silently, this is OK
+      if (code === 401) {
+        logger.warn('LOCATION_SCREEN', 'Failed to save location to API (guest user)', error);
+        apiSaveSucceeded = false; // Not a success, but acceptable
+        apiSaveFailedWithNonGuestError = false; // This is OK, don't block dismissal
+      } else {
+        // Other errors (network, server errors, etc.) - this should prevent dismissal
+        logger.error('LOCATION_SCREEN', 'Failed to save location to API (non-guest error)', error);
+        apiSaveFailedWithNonGuestError = true;
+      }
     }
     
     // Cache location locally - this must succeed
+    let cacheSaveSucceeded = false;
     try {
       await cacheUserLocation(locationData);
+      cacheSaveSucceeded = true;
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Failed to cache location locally', error);
       showErrorToast(ErrorType.SAVE_LOCATION);
@@ -325,12 +341,22 @@ export default function LocationScreen() {
       return; // Don't proceed if caching fails
     }
     
+    // Only dismiss if:
+    // 1. Cache save succeeded AND
+    // 2. (API save succeeded OR API failed silently for guest users)
+    // If API failed with a non-guest error, don't dismiss
+    if (!cacheSaveSucceeded || apiSaveFailedWithNonGuestError) {
+      setSaving(false);
+      return;
+    }
+    
     // Refresh location context and trigger root layout refresh
     await refresh();
     triggerRefresh(); // Trigger root layout refresh
     
     setSaving(false);
-    // Navigation will be handled by root layout detecting location change
+    // Dismiss the modal after successfully saving
+    router.dismiss();
   };
 
   // Handle distance slider completion (when user releases slider)
