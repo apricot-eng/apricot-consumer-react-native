@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { FigmaColors } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FigmaColors.white,
   },
   mapContainer: {
     flex: 1,
@@ -29,10 +30,10 @@ export const styles = StyleSheet.create({
     color: '#666',
   },
   bottomSheet: {
-    backgroundColor: '#fff',
+    backgroundColor: FigmaColors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    shadowColor: '#000',
+    shadowColor: FigmaColors.textBlack,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -97,11 +98,11 @@ export const styles = StyleSheet.create({
     top: 56,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: FigmaColors.white,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    shadowColor: '#000',
+    shadowColor: FigmaColors.textBlack,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -138,11 +139,11 @@ export const styles = StyleSheet.create({
   },
   currentLocationText: {
     fontSize: 16,
-    color: '#794509',
+    color: FigmaColors.earthBrown,
     fontWeight: '500',
   },
   selectButton: {
-    backgroundColor: '#794509',
+    backgroundColor: FigmaColors.earthBrown,
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
@@ -152,7 +153,7 @@ export const styles = StyleSheet.create({
     opacity: 0.6,
   },
   selectButtonText: {
-    color: '#fff',
+    color: FigmaColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
