@@ -4,9 +4,11 @@ import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { cacheUserLocation, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
+import { ErrorType } from '@/utils/error';
 import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate, locationSearchResultToLocationData, validateAndConvertCoordinates } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
+import { showErrorToast } from '@/utils/toast';
 import {
   Camera,
   Images,
@@ -303,20 +305,32 @@ export default function LocationScreen() {
       return;
     }
 
+    setSaving(true);
+    const locationData = locationSearchResultToLocationData(selectedLocation);
+    
+    // Try to save via API - fail silently for guest users
     try {
-      setSaving(true);
-      const locationData = locationSearchResultToLocationData(selectedLocation);
       await saveUserLocationApi(locationData);
-      await cacheUserLocation(locationData);
-      await refresh();
-      triggerRefresh(); // Trigger root layout refresh
-      
-      // Navigation will be handled by root layout detecting location change
     } catch (error) {
-      logger.error('LOCATION_SCREEN', 'Error saving location', error);
-    } finally {
-      setSaving(false);
+      logger.warn('LOCATION_SCREEN', 'Failed to save location to API (guest user or network issue)', error);
     }
+    
+    // Cache location locally - this must succeed
+    try {
+      await cacheUserLocation(locationData);
+    } catch (error) {
+      logger.error('LOCATION_SCREEN', 'Failed to cache location locally', error);
+      showErrorToast(ErrorType.SAVE_LOCATION);
+      setSaving(false);
+      return; // Don't proceed if caching fails
+    }
+    
+    // Refresh location context and trigger root layout refresh
+    await refresh();
+    triggerRefresh(); // Trigger root layout refresh
+    
+    setSaving(false);
+    // Navigation will be handled by root layout detecting location change
   };
 
   // Handle distance slider completion (when user releases slider)

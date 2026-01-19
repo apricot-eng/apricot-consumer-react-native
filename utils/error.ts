@@ -5,6 +5,7 @@ export enum ErrorType {
   SERVER = 'server',
   REQUEST = 'request',
   UNKNOWN = 'unknown',
+  SAVE_LOCATION = 'saveLocation',
 }
 
 // Helper to determine error type from axios error
