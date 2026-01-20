@@ -1,12 +1,14 @@
 import { StyleSheet } from 'react-native';
 
+import { Colors, FigmaColors } from '@/constants/theme';
+
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: FigmaColors.white,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -56,11 +58,11 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#0a7ea4',
+    backgroundColor: Colors.light.tint,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
+    color: FigmaColors.white,
     fontSize: 16,
     fontWeight: '600',
   },

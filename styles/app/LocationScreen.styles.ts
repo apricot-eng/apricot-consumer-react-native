@@ -1,9 +1,11 @@
 import { StyleSheet } from 'react-native';
 
+import { FigmaColors } from '@/constants/theme';
+
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FigmaColors.white,
   },
   mapContainer: {
     flex: 1,

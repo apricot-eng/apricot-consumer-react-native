@@ -81,6 +81,10 @@ export const translations = {
         title: 'Error desconocido',
         message: 'Ocurrió un error inesperado. Por favor, intenta nuevamente.',
       },
+      saveLocation: {
+        title: 'Error al guardar ubicación',
+        message: 'No se pudo guardar la ubicación. Por favor, intenta nuevamente.',
+      },
       loadSurpriseBags: 'Error al cargar las bolsas sorpresa',
       loadDetails: 'Error al cargar los detalles',
       invalidId: 'ID de bolsa sorpresa inválido',
@@ -168,6 +172,10 @@ export const translations = {
       unknown: {
         title: 'Unknown error',
         message: 'An unexpected error occurred. Please try again.',
+      },
+      saveLocation: {
+        title: 'Error saving location',
+        message: 'Could not save location. Please try again.',
       },
       loadSurpriseBags: 'Error loading surprise bags',
       loadDetails: 'Error loading details',

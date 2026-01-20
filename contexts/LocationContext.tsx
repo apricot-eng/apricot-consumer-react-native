@@ -1,5 +1,6 @@
 import { getUserLocation, UserLocation } from '@/api/locations';
 import { DEFAULT_LOCATION } from '@/constants/location';
+import { getDefaultUserLocation } from '@/utils/location';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 interface LocationContextType {
@@ -25,44 +26,12 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setCurrentLocation(location);
       } else {
         // Use default location
-        setCurrentLocation({
-          location_id: 0,
-          lat: DEFAULT_LOCATION.lat,
-          lon: DEFAULT_LOCATION.lon,
-          location: {
-            lat: DEFAULT_LOCATION.lat,
-            lon: DEFAULT_LOCATION.lon,
-            display_name: DEFAULT_LOCATION.display_name,
-            address: {
-              neighbourhood: DEFAULT_LOCATION.neighbourhood,
-              city: DEFAULT_LOCATION.city,
-              state: DEFAULT_LOCATION.state,
-              country: DEFAULT_LOCATION.country,
-            },
-            place_id: DEFAULT_LOCATION.place_id,
-          },
-        });
+        setCurrentLocation(getDefaultUserLocation());
       }
     } catch (error: any) {
       // On error, use default location
       if (error.response?.status === 404) {
-        setCurrentLocation({
-          location_id: 0,
-          lat: DEFAULT_LOCATION.lat,
-          lon: DEFAULT_LOCATION.lon,
-          location: {
-            lat: DEFAULT_LOCATION.lat,
-            lon: DEFAULT_LOCATION.lon,
-            display_name: DEFAULT_LOCATION.display_name,
-            address: {
-              neighbourhood: DEFAULT_LOCATION.neighbourhood,
-              city: DEFAULT_LOCATION.city,
-              state: DEFAULT_LOCATION.state,
-              country: DEFAULT_LOCATION.country,
-            },
-            place_id: DEFAULT_LOCATION.place_id,
-          },
-        });
+        setCurrentLocation(getDefaultUserLocation());
       }
     } finally {
       setIsLoadingLocation(false);

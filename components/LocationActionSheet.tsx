@@ -4,14 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React from 'react';
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
+import { Button } from '@/components/ui/Button';
 import { styles } from '@/styles/components/LocationActionSheet.styles';
 
 interface LocationActionSheetProps {
@@ -116,17 +117,14 @@ export default function LocationActionSheet({
         </TouchableOpacity>
 
         {/* Select Button */}
-        <TouchableOpacity
-          style={[styles.selectButton, saving && styles.selectButtonDisabled]}
+        <Button
+          variant="primary"
           onPress={onSelect}
+          loading={saving}
           disabled={saving}
         >
-          {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.selectButtonText}>{t('location.select')}</Text>
-          )}
-        </TouchableOpacity>
+          {t('location.select')}
+        </Button>
       </ScrollView>
     </View>
   );

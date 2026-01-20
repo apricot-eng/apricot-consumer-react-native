@@ -326,7 +326,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
-    shadowColor: '#000',
+    shadowColor: FigmaColors.textBlack,
     shadowOffset: {
       width: 1,
       height: 1,

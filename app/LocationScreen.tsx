@@ -1,13 +1,14 @@
-import { LocationSearchResult, saveUserLocation, searchLocations } from '@/api/locations';
+import { LocationSearchResult, saveUserLocationApi, searchLocations } from '@/api/locations';
 import { getStoresNearby, Store } from '@/api/stores';
 import LocationActionSheet from '@/components/LocationActionSheet';
 import { useLocationContext } from '@/contexts/LocationContext';
-import { markLocationAsSet, useUserLocation } from '@/hooks/useUserLocation';
+import { cacheUserLocation, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate } from '@/utils/location';
+import { ErrorType } from '@/utils/error';
+import { calculateBoundsFromCenter, distanceToZoomLevel, isValidCoordinate, locationSearchResultToLocationData, validateAndConvertCoordinates } from '@/utils/location';
 import { logger } from '@/utils/logger';
 import { getMapPinImage } from '@/utils/mapPins';
-import { showSuccessToast } from '@/utils/toast';
+import { showErrorToast } from '@/utils/toast';
 import {
   Camera,
   Images,
@@ -16,7 +17,7 @@ import {
   SymbolLayer
 } from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -36,7 +37,8 @@ const DEFAULT_ZOOM = 12;
 const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v2/style.json?key=RqClR17cITmceexTV2AF';
 
 export default function LocationScreen() {
-  const { refresh } = useUserLocation();
+  const router = useRouter();
+  const { location, loading: loadingLocation, refresh } = useUserLocation();
   const { triggerRefresh } = useLocationContext();
   const mapRef = useRef<React.ComponentRef<typeof MapView>>(null);
   const cameraRef = useRef<React.ComponentRef<typeof Camera>>(null);
@@ -48,11 +50,35 @@ export default function LocationScreen() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  // Initialize mapCenter from location when available, fallback to DEFAULT_CENTER
+  const [mapCenter, setMapCenter] = useState<[number, number]>(() => {
+    // This will be updated via useEffect when location loads
+    return DEFAULT_CENTER;
+  });
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const searchTimeoutRef = useRef<number | null>(null);
   const fetchTimeoutRef = useRef<number | null>(null);
   const lastFetchedRef = useRef<{ center: [number, number]; radius: number } | null>(null);
+
+  // Initialize map center from location when it loads
+  useEffect(() => {
+    if (!loadingLocation && location) {
+      const center: [number, number] = [location.long, location.lat];
+      if (isValidCoordinate(location.lat, location.long)) {
+        setMapCenter(center);
+        // Center camera on loaded location
+        if (cameraRef.current) {
+          cameraRef.current.setCamera({
+            centerCoordinate: center,
+            zoomLevel: DEFAULT_ZOOM,
+            animationDuration: 0, // No animation on initial load
+          });
+        }
+      } else {
+        logger.warn('LOCATION_SCREEN', 'Invalid location coordinates from hook', location);
+      }
+    }
+  }, [loadingLocation, location]);
 
   // Debounced search function
   const performSearch = useCallback(async (query: string) => {
@@ -132,7 +158,7 @@ export default function LocationScreen() {
           id: store.id,
           name: store.store_name,
           lat: store.latitude,
-          lon: store.longitude,
+          long: store.longitude,
           category: store.category,
           hasValidCoords: isValidCoordinate(store.latitude, store.longitude)
         }))
@@ -231,12 +257,17 @@ export default function LocationScreen() {
   // Handle location selection from search
   const handleLocationSelect = (location: LocationSearchResult) => {
     setSelectedLocation(location);
-    setSearchQuery(location.display_name);
+    setSearchQuery(location.display_name ?? '');
     setSearchResults([]);
     Keyboard.dismiss();
 
+    // Convert and validate coordinates
+    const newCenter = validateAndConvertCoordinates(location);
+    if (!newCenter) {
+      return;
+    }
+
     // Center map on selected location
-    const newCenter: [number, number] = [location.lon, location.lat];
     setMapCenter(newCenter);
     if (cameraRef.current) {
       cameraRef.current.setCamera({
@@ -255,7 +286,7 @@ export default function LocationScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        showSuccessToast('Permisos de ubicación denegados');
+        logger.warn('LOCATION_SCREEN', 'Location permissions denied');
         return;
       }
 
@@ -268,7 +299,7 @@ export default function LocationScreen() {
         id: 'current',
         display_name: 'Mi ubicación actual',
         lat: latitude,
-        lon: longitude,
+        long: longitude,
         place_id: '',
         address: {},
       });
@@ -285,7 +316,6 @@ export default function LocationScreen() {
       fetchStoresForCenter(newCenter, distance);
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error getting current location', error);
-      showSuccessToast('Error al obtener la ubicación');
     }
   };
 
@@ -296,31 +326,61 @@ export default function LocationScreen() {
      * something on the map already.
      */
     if (!selectedLocation) {
-      showSuccessToast(t('location.selectLocation'));
+      logger.warn('LOCATION_SCREEN', 'No location selected');
       return;
     }
 
+    setSaving(true);
+    const locationData = locationSearchResultToLocationData(selectedLocation);
+    
+    // Try to save via API - track if it succeeds or fails silently (401 for guest users)
+    let apiSaveSucceeded = false;
+    let apiSaveFailedWithNonGuestError = false;
     try {
-      setSaving(true);
-      await saveUserLocation({
-        lat: selectedLocation.lat,
-        lon: selectedLocation.lon,
-        place_id: selectedLocation.place_id,
-        display_name: selectedLocation.display_name,
-        address_components: selectedLocation.address,
-      });
-
-      await markLocationAsSet();
-      await refresh();
-      triggerRefresh(); // Trigger root layout refresh
-      showSuccessToast('Ubicación guardada');
-      
-      // Navigation will be handled by root layout detecting location change
-    } catch (error) {
-      logger.error('LOCATION_SCREEN', 'Error saving location', error);
-    } finally {
-      setSaving(false);
+      await saveUserLocationApi(locationData);
+      apiSaveSucceeded = true;
+    } catch (error: any) {
+      const code = error.response?.status;
+      // 401 means user is a guest (not authenticated) - fail silently, this is OK
+      if (code === 401) {
+        logger.warn('LOCATION_SCREEN', 'Failed to save location to API (guest user)', error);
+        apiSaveSucceeded = false; // Not a success, but acceptable
+        apiSaveFailedWithNonGuestError = false; // This is OK, don't block dismissal
+      } else {
+        // Other errors (network, server errors, etc.) - this should prevent dismissal
+        logger.error('LOCATION_SCREEN', 'Failed to save location to API (non-guest error)', error);
+        apiSaveFailedWithNonGuestError = true;
+      }
     }
+    
+    // Cache location locally - this must succeed
+    let cacheSaveSucceeded = false;
+    try {
+      await cacheUserLocation(locationData);
+      cacheSaveSucceeded = true;
+    } catch (error) {
+      logger.error('LOCATION_SCREEN', 'Failed to cache location locally', error);
+      showErrorToast(ErrorType.SAVE_LOCATION);
+      setSaving(false);
+      return; // Don't proceed if caching fails
+    }
+    
+    // Only dismiss if:
+    // 1. Cache save succeeded AND
+    // 2. (API save succeeded OR API failed silently for guest users)
+    // If API failed with a non-guest error, don't dismiss
+    if (!cacheSaveSucceeded || apiSaveFailedWithNonGuestError) {
+      setSaving(false);
+      return;
+    }
+    
+    // Refresh location context and trigger root layout refresh
+    await refresh();
+    triggerRefresh(); // Trigger root layout refresh
+    
+    setSaving(false);
+    // Dismiss the modal after successfully saving
+    router.dismiss();
   };
 
   // Handle distance slider completion (when user releases slider)
@@ -351,7 +411,7 @@ export default function LocationScreen() {
     name: string
   ) => {
     return (
-      <>
+      <React.Fragment key={id}>
       <Images images={pinImage} />
 
       <ShapeSource
@@ -380,7 +440,7 @@ export default function LocationScreen() {
           }}
         />
       </ShapeSource>
-      </>
+      </React.Fragment>
     );
   }, []);
 
@@ -388,57 +448,66 @@ export default function LocationScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Map */}
       <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          mapStyle={MAP_STYLE_URL}
-          onRegionDidChange={handleRegionDidChange}
-        >
-          <Camera
-            ref={cameraRef}
-            defaultSettings={{
-              centerCoordinate: mapCenter,
-              zoomLevel: mapZoom,
-            }}
-          />
-
-          {/* Actual Store Pins */}
-          {stores
-            .filter(store => {
-              const isValid = isValidCoordinate(store.latitude, store.longitude);
-              if (!isValid) {
-                logger.debug('LOCATION_SCREEN', 'Store filtered out - invalid coordinates', {
-                  storeId: store.id,
-                  storeName: store.store_name,
-                  lat: store.latitude,
-                  lon: store.longitude
-                });
-              }
-              return isValid;
-            })
-            .map(store => {
-              logger.debug('LOCATION_SCREEN', 'Rendering store pin', {
-                storeId: store.id,
-                storeName: store.store_name,
-                lat: store.latitude,
-                lon: store.longitude,
-                category: store.category
-              });
-              const pinImage = getMapPinImage(store.category || 'cafe');
-              return getMapPinComponent(
-                `store-${store.id}`,
-                [store.longitude!, store.latitude!],
-                pinImage,
-                store.category || 'restaurante',
-              );
-            })}
-        </MapView>
-
-        {loadingStores && (
+        {loadingLocation ? (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="small" color="#794509" />
-            <Text style={styles.loadingText}>{t('location.loadingStores')}</Text>
+            <ActivityIndicator size="large" color="#794509" />
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
+        ) : (
+          <>
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              mapStyle={MAP_STYLE_URL}
+              onRegionDidChange={handleRegionDidChange}
+            >
+              <Camera
+                ref={cameraRef}
+                defaultSettings={{
+                  centerCoordinate: mapCenter,
+                  zoomLevel: mapZoom,
+                }}
+              />
+
+              {/* Actual Store Pins */}
+              {stores
+                .filter(store => {
+                  const isValid = isValidCoordinate(store.latitude, store.longitude);
+                  if (!isValid) {
+                    logger.debug('LOCATION_SCREEN', 'Store filtered out - invalid coordinates', {
+                      storeId: store.id,
+                      storeName: store.store_name,
+                      lat: store.latitude,
+                      long: store.longitude
+                    });
+                  }
+                  return isValid;
+                })
+                .map(store => {
+                  logger.debug('LOCATION_SCREEN', 'Rendering store pin', {
+                    storeId: store.id,
+                    storeName: store.store_name,
+                    lat: store.latitude,
+                    long: store.longitude,
+                    category: store.category
+                  });
+                  const pinImage = getMapPinImage(store.category || 'cafe');
+                  return getMapPinComponent(
+                    `store-${store.id}`,
+                    [store.longitude!, store.latitude!],
+                    pinImage,
+                    store.category || 'restaurante',
+                  );
+                })}
+            </MapView>
+
+            {loadingStores && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="small" color="#794509" />
+                <Text style={styles.loadingText}>{t('location.loadingStores')}</Text>
+              </View>
+            )}
+          </>
         )}
       </View>
 

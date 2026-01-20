@@ -14,7 +14,7 @@ import { styles } from '@/styles/app/_layout.styles';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { hasLocation, loading } = useUserLocation();
+  const { loading } = useUserLocation();
 
   // Show loading state while checking location
   if (loading) {
@@ -56,7 +56,9 @@ export default function RootLayout() {
             <Stack.Screen 
               name="LocationScreen" 
               options={{ 
-                presentation: 'modal',
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+                gestureDirection: 'vertical',
                 headerShown: false,
               }} 
             />
