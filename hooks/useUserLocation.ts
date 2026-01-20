@@ -1,4 +1,4 @@
-import { getUserLocation, saveUserLocationApi, UserLocation } from '@/api/locations';
+import { getUserLocation, UserLocation } from '@/api/locations';
 import { DEFAULT_LOCATION } from '@/constants/location';
 import { LocationContext } from '@/contexts/LocationContext';
 import { LocationData } from '@/types/location';
@@ -9,7 +9,7 @@ import { useContext, useEffect, useState } from 'react';
 const CACHED_LOCATION_KEY = 'user_location_cached';
 
 export interface UseUserLocationResult {
-  hasLocation: boolean;
+  location: LocationData | null;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -73,27 +73,20 @@ const loadCachedLocation = async (): Promise<LocationData | null> => {
 };
 
 /**
- * Custom hook to check if the user has a location set
- * Checks AsyncStorage first, then verifies with API if needed
+ * Custom hook to get the user's location
+ * Checks API first, then falls back to cache, then default
  */
 export const useUserLocation = (): UseUserLocationResult => {
-  const [hasLocation, setHasLocation] = useState(false);
+  const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const locationContext = useContext(LocationContext);
   const refreshTrigger = locationContext?.refreshTrigger ?? 0;
 
   /**
-   * Sets the location state and persists it to AsyncStorage
+   * Gets location from API
+   * Returns the location data if successful, null if not found or error
    */
-  const setLocationState = async (location: LocationData) => {
-    setHasLocation(true);
-    await saveCachedLocation(location);
-  };
-
-  /**
-   * Verifies location with API and updates cached location accordingly
-   */
-  const verifyLocationWithAPI = async (): Promise<LocationData | null> => {
+  const getLocationFromAPI = async (): Promise<LocationData | null> => {
     try {
       const userLocation = await getUserLocation();
       if (userLocation) {
@@ -104,112 +97,57 @@ export const useUserLocation = (): UseUserLocationResult => {
       }
       return null;
     } catch (error: any) {
-      logger.warn('USE_USER_LOCATION', 'Location API verification failed', error);
+      const status = error.response?.status;
+      // 404 means no location is set, which is expected
+      // 401 means user is not logged in, which is also expected
+      if (status === 404 || status === 401) {
+        logger.debug('USE_USER_LOCATION', 'No location in API (expected)', { status });
+        return null;
+      }
+      // For other errors (network, timeout, etc.), log and return null to trigger cache fallback
+      logger.warn('USE_USER_LOCATION', 'Location API call failed', error);
       return null;
     }
   };
 
   /**
-   * Handles the case when we have a cached location value
+   * Loads location with fallback chain: API → cache → default
    */
-  const handleCachedLocation = async (cachedLocation: LocationData) => {
-    const apiLocation = await verifyLocationWithAPI();
-    if (apiLocation !== null) {
-      // API call succeeded - use API location (it's the source of truth)
-      await setLocationState(apiLocation);
-    } else {
-      // API call failed, trust the cache (handles offline scenarios)
-      setHasLocation(true);
+  const loadLocation = async (): Promise<LocationData> => {
+    // Step 1: Try API first
+    const apiLocation = await getLocationFromAPI();
+    if (apiLocation) {
+      return apiLocation;
     }
+
+    // Step 2: API didn't return a location (404, 401, or network error)
+    // Fallback to cache
+    const cachedLocation = await loadCachedLocation();
+    if (cachedLocation) {
+      logger.debug('USE_USER_LOCATION', 'Using cached location');
+      return cachedLocation;
+    }
+
+    // Step 3: No cache available, use default
+    logger.debug('USE_USER_LOCATION', 'Using default location (Palermo)');
+    await saveCachedLocation(DEFAULT_LOCATION_OBJECT);
+    return DEFAULT_LOCATION_OBJECT;
   };
 
   /**
-   * Handles the case when we don't have a cached location value
+   * Checks and loads location
    */
-  const handleNoCachedLocation = async () => {
-    const apiLocation = await verifyLocationWithAPI();
-    if (apiLocation === null) {
-      // API call failed, set default location
-      await setDefaultLocation();
-    } else if (apiLocation) {
-      // Location exists in API
-      await setLocationState(apiLocation);
-    } else {
-      // No location exists in API, set default
-      await setDefaultLocation();
-    }
-  };
-
-  /**
-   * Handles errors during location check
-   */
-  const handleLocationError = async (error: any) => {
-    if (error.response?.status === 404) {
-      // User has no location - set default
-      await setDefaultLocation();
-    } else {
-      // For other errors, check cache
-      const cachedLocation = await loadCachedLocation();
-      if (cachedLocation) {
-        setHasLocation(true);
-      } else {
-        // No cache and error occurred, set default
-        await setDefaultLocation();
-      }
-    }
-  };
-
   const checkLocation = async () => {
     try {
       setLoading(true);
-      
-      const cachedLocation = await loadCachedLocation();
-      if (cachedLocation) {
-        await handleCachedLocation(cachedLocation);
-      } else {
-        await handleNoCachedLocation();
-      }
-    } catch (error: any) {
-      await handleLocationError(error);
+      const loadedLocation = await loadLocation();
+      setLocation(loadedLocation);
+    } catch (error) {
+      logger.error('USE_USER_LOCATION', 'Error loading location', error);
+      // Even on error, set default location to ensure app can proceed
+      setLocation(DEFAULT_LOCATION_OBJECT);
     } finally {
       setLoading(false);
-    }
-  };
-
-  /**
-   * Set default location (Palermo) when user has no location
-   */
-  const setDefaultLocation = async () => {
-    try {
-      // Save default location to cache first
-      await saveCachedLocation(DEFAULT_LOCATION_OBJECT);
-      setHasLocation(true);
-      
-      // Try to save default location to API
-      try {
-        await saveUserLocationApi({
-          lat: DEFAULT_LOCATION.lat,
-          long: DEFAULT_LOCATION.long,
-          place_id: DEFAULT_LOCATION.place_id || undefined,
-          display_name: DEFAULT_LOCATION.display_name,
-          address_components: {
-            neighbourhood: DEFAULT_LOCATION.neighbourhood,
-            city: DEFAULT_LOCATION.city,
-          },
-        });
-        // Successfully saved to API - update cache with API response
-        const apiLocation = await verifyLocationWithAPI();
-        if (apiLocation) {
-          await saveCachedLocation(apiLocation);
-        }
-      } catch (saveError: any) {
-        // If save fails (network error, etc.), we still have the cached default
-        logger.warn('USE_USER_LOCATION', 'Failed to save default location to API, using cached default', saveError);
-      }
-    } catch (error) {
-      // Fallback: even if everything fails, allow app to proceed with default
-      logger.error('USE_USER_LOCATION', 'Error setting default location', error);
-      setHasLocation(true);
     }
   };
 
@@ -221,7 +159,7 @@ export const useUserLocation = (): UseUserLocationResult => {
     await checkLocation();
   };
 
-  return { hasLocation, loading, refresh };
+  return { location, loading, refresh };
 };
 
 /**

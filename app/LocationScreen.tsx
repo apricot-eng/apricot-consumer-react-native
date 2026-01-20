@@ -38,7 +38,7 @@ const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v2/style.json?key=R
 
 export default function LocationScreen() {
   const router = useRouter();
-  const { refresh } = useUserLocation();
+  const { location, loading: loadingLocation, refresh } = useUserLocation();
   const { triggerRefresh } = useLocationContext();
   const mapRef = useRef<React.ComponentRef<typeof MapView>>(null);
   const cameraRef = useRef<React.ComponentRef<typeof Camera>>(null);
@@ -50,11 +50,35 @@ export default function LocationScreen() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  // Initialize mapCenter from location when available, fallback to DEFAULT_CENTER
+  const [mapCenter, setMapCenter] = useState<[number, number]>(() => {
+    // This will be updated via useEffect when location loads
+    return DEFAULT_CENTER;
+  });
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
   const searchTimeoutRef = useRef<number | null>(null);
   const fetchTimeoutRef = useRef<number | null>(null);
   const lastFetchedRef = useRef<{ center: [number, number]; radius: number } | null>(null);
+
+  // Initialize map center from location when it loads
+  useEffect(() => {
+    if (!loadingLocation && location) {
+      const center: [number, number] = [location.long, location.lat];
+      if (isValidCoordinate(location.lat, location.long)) {
+        setMapCenter(center);
+        // Center camera on loaded location
+        if (cameraRef.current) {
+          cameraRef.current.setCamera({
+            centerCoordinate: center,
+            zoomLevel: DEFAULT_ZOOM,
+            animationDuration: 0, // No animation on initial load
+          });
+        }
+      } else {
+        logger.warn('LOCATION_SCREEN', 'Invalid location coordinates from hook', location);
+      }
+    }
+  }, [loadingLocation, location]);
 
   // Debounced search function
   const performSearch = useCallback(async (query: string) => {
@@ -424,57 +448,66 @@ export default function LocationScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Map */}
       <View style={styles.mapContainer}>
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          mapStyle={MAP_STYLE_URL}
-          onRegionDidChange={handleRegionDidChange}
-        >
-          <Camera
-            ref={cameraRef}
-            defaultSettings={{
-              centerCoordinate: mapCenter,
-              zoomLevel: mapZoom,
-            }}
-          />
-
-          {/* Actual Store Pins */}
-          {stores
-            .filter(store => {
-              const isValid = isValidCoordinate(store.latitude, store.longitude);
-              if (!isValid) {
-                logger.debug('LOCATION_SCREEN', 'Store filtered out - invalid coordinates', {
-                  storeId: store.id,
-                  storeName: store.store_name,
-                  lat: store.latitude,
-                  long: store.longitude
-                });
-              }
-              return isValid;
-            })
-            .map(store => {
-              logger.debug('LOCATION_SCREEN', 'Rendering store pin', {
-                storeId: store.id,
-                storeName: store.store_name,
-                lat: store.latitude,
-                long: store.longitude,
-                category: store.category
-              });
-              const pinImage = getMapPinImage(store.category || 'cafe');
-              return getMapPinComponent(
-                `store-${store.id}`,
-                [store.longitude!, store.latitude!],
-                pinImage,
-                store.category || 'restaurante',
-              );
-            })}
-        </MapView>
-
-        {loadingStores && (
+        {loadingLocation ? (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="small" color="#794509" />
-            <Text style={styles.loadingText}>{t('location.loadingStores')}</Text>
+            <ActivityIndicator size="large" color="#794509" />
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
+        ) : (
+          <>
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              mapStyle={MAP_STYLE_URL}
+              onRegionDidChange={handleRegionDidChange}
+            >
+              <Camera
+                ref={cameraRef}
+                defaultSettings={{
+                  centerCoordinate: mapCenter,
+                  zoomLevel: mapZoom,
+                }}
+              />
+
+              {/* Actual Store Pins */}
+              {stores
+                .filter(store => {
+                  const isValid = isValidCoordinate(store.latitude, store.longitude);
+                  if (!isValid) {
+                    logger.debug('LOCATION_SCREEN', 'Store filtered out - invalid coordinates', {
+                      storeId: store.id,
+                      storeName: store.store_name,
+                      lat: store.latitude,
+                      long: store.longitude
+                    });
+                  }
+                  return isValid;
+                })
+                .map(store => {
+                  logger.debug('LOCATION_SCREEN', 'Rendering store pin', {
+                    storeId: store.id,
+                    storeName: store.store_name,
+                    lat: store.latitude,
+                    long: store.longitude,
+                    category: store.category
+                  });
+                  const pinImage = getMapPinImage(store.category || 'cafe');
+                  return getMapPinComponent(
+                    `store-${store.id}`,
+                    [store.longitude!, store.latitude!],
+                    pinImage,
+                    store.category || 'restaurante',
+                  );
+                })}
+            </MapView>
+
+            {loadingStores && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="small" color="#794509" />
+                <Text style={styles.loadingText}>{t('location.loadingStores')}</Text>
+              </View>
+            )}
+          </>
         )}
       </View>
 

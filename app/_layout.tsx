@@ -14,7 +14,7 @@ import { styles } from '@/styles/app/_layout.styles';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { hasLocation, loading } = useUserLocation();
+  const { loading } = useUserLocation();
 
   // Show loading state while checking location
   if (loading) {
