@@ -34,7 +34,7 @@ const DEFAULT_CENTER: [number, number] = [-58.4245236, -34.5803362];
 const DEFAULT_ZOOM = 12;
 
 // MapLibre style URL (using a free style)
-const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v2/style.json?key=RqClR17cITmceexTV2AF';
+const MAP_STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${process.env.EXPO_PUBLIC_MAPTILER_API_KEY}`;
 
 export default function LocationScreen() {
   const router = useRouter();
