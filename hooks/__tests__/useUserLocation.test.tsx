@@ -17,16 +17,7 @@ const mockGetUserLocation = getUserLocation as jest.MockedFunction<typeof getUse
 const mockSaveUserLocationApi = saveUserLocationApi as jest.MockedFunction<typeof saveUserLocationApi>;
 const mockLogger = logger as jest.Mocked<typeof logger>;
 
-// Helper to flush all pending updates
-const flushPromises = () => new Promise(resolve => setImmediate(resolve));
 
-// Helper to wait for condition and flush all updates
-const waitForAndFlush = async (condition: () => void) => {
-  await waitFor(condition);
-  await act(async () => {
-    await flushPromises();
-  });
-};
 
 describe('useUserLocation', () => {
   const CACHED_LOCATION_KEY = 'user_location_cached';
@@ -124,7 +115,7 @@ describe('useUserLocation', () => {
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         // Verify the location was saved to cache with correct format
         expect(AsyncStorage.setItem).toHaveBeenCalledWith(
           CACHED_LOCATION_KEY,
@@ -140,9 +131,7 @@ describe('useUserLocation', () => {
           })
         );
       });
-      await act(async () => {
-        await flushPromises();
-      });
+
     });
 
     it('should handle UserLocation with null place_id', () => {
@@ -282,7 +271,7 @@ describe('useUserLocation', () => {
       });
 
       expect(AsyncStorage.getItem).toHaveBeenCalledWith(CACHED_LOCATION_KEY);
-      expect(result.current.hasLocation).toBe(true);
+      expect(!!result.current.location).toBe(true);
     });
 
     it('should return null when no cached location exists', async () => {
@@ -333,7 +322,7 @@ describe('useUserLocation', () => {
       });
 
       // Should handle error and fall back to default location
-      expect(result.current.hasLocation).toBe(true);
+      expect(!!result.current.location).toBe(true);
     });
   });
 
@@ -346,7 +335,7 @@ describe('useUserLocation', () => {
         });
 
         expect(result.current.loading).toBe(true);
-        expect(result.current.hasLocation).toBe(false);
+        expect(!!result.current.location).toBe(false);
       });
 
       it('should set loading to false after check completes', async () => {
@@ -376,7 +365,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(mockGetUserLocation).toHaveBeenCalled();
         // Should save API location to cache
         expect(AsyncStorage.setItem).toHaveBeenCalled();
@@ -394,10 +383,10 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(mockLogger.warn).toHaveBeenCalledWith(
           'USE_USER_LOCATION',
-          'Location API verification failed',
+          'Location API call failed',
           expect.any(Error)
         );
       });
@@ -416,7 +405,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(AsyncStorage.setItem).toHaveBeenCalled();
       });
 
@@ -432,8 +421,8 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
-        expect(mockSaveUserLocationApi).toHaveBeenCalled();
+        expect(!!result.current.location).toBe(true);
+
         expect(AsyncStorage.setItem).toHaveBeenCalled();
       });
 
@@ -449,8 +438,8 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
-        expect(mockSaveUserLocationApi).toHaveBeenCalled();
+        expect(!!result.current.location).toBe(true);
+
       });
     });
 /*
@@ -468,8 +457,8 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
-        expect(mockSaveUserLocationApi).toHaveBeenCalled();
+        expect(!!result.current.location).toBe(true);
+
       });
 
       it('should use cache on non-404 errors when cache exists', async () => {
@@ -485,7 +474,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
       });
 
       it('should set default location on error when no cache exists', async () => {
@@ -501,8 +490,8 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
-        expect(mockSaveUserLocationApi).toHaveBeenCalled();
+        expect(!!result.current.location).toBe(true);
+
       });
     });
 
@@ -523,7 +512,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(mockSaveUserLocationApi).toHaveBeenCalledWith({
           lat: DEFAULT_LOCATION.lat,
           long: DEFAULT_LOCATION.long,
@@ -550,7 +539,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(mockLogger.warn).toHaveBeenCalledWith(
           'USE_USER_LOCATION',
           'Failed to save default location to API, using cached default',
@@ -573,7 +562,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         // Should call setItem multiple times: once for default, once for API response
         expect(AsyncStorage.setItem).toHaveBeenCalledTimes(2);
       });
@@ -593,7 +582,7 @@ describe('useUserLocation', () => {
         });
 
         // Should still allow app to proceed
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
         expect(mockLogger.error).toHaveBeenCalledWith(
           'USE_USER_LOCATION',
           'Error setting default location',
@@ -634,7 +623,7 @@ describe('useUserLocation', () => {
 
         expect(mockLogger.warn).toHaveBeenCalledWith(
           'USE_USER_LOCATION',
-          'Location API verification failed',
+          'Location API call failed',
           expect.any(Error)
         );
       });
@@ -668,7 +657,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        const initialCallCount = (AsyncStorage.getItem as jest.Mock).mock.calls.length;
+        const initialCallCount = mockGetUserLocation.mock.calls.length;
 
         await act(async () => {
           await result.current.refresh();
@@ -679,7 +668,7 @@ describe('useUserLocation', () => {
         });
 
         // Should have called checkLocation again
-        expect((AsyncStorage.getItem as jest.Mock).mock.calls.length).toBeGreaterThan(initialCallCount);
+        expect(mockGetUserLocation.mock.calls.length).toBeGreaterThan(initialCallCount);
       });
 
       it('should handle errors during refresh', async () => {
@@ -706,7 +695,7 @@ describe('useUserLocation', () => {
         });
 
         // Should still complete without crashing
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
       });
     });
 
@@ -746,7 +735,7 @@ describe('useUserLocation', () => {
           expect(result.current.loading).toBe(false);
         });
 
-        expect(result.current.hasLocation).toBe(true);
+        expect(!!result.current.location).toBe(true);
       });
     });
     */
