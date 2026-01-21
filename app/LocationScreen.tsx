@@ -3,6 +3,7 @@ import LocationActionSheet from '@/components/LocationActionSheet';
 import { MapPin } from '@/components/MapPin';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
+import { useLocationSelection } from '@/hooks/useLocationSelection';
 import { useMapControl } from '@/hooks/useMapControl';
 import { useStoreSearch } from '@/hooks/useStoreSearch';
 import { cacheUserLocation, useUserLocation } from '@/hooks/useUserLocation';
@@ -19,7 +20,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -35,9 +36,14 @@ export default function LocationScreen() {
   const { location, loading: loadingLocation, refresh } = useUserLocation();
   const { triggerRefresh } = useLocationContext();
 
-  const [selectedLocation, setSelectedLocation] = useState<LocationSearchResult | null>(null);
-  const [distance, setDistance] = useState(2); // Default 2km
-  const [saving, setSaving] = useState(false);
+  const {
+    selectedLocation,
+    setSelectedLocation,
+    distance,
+    setDistance,
+    saving,
+    setSaving,
+  } = useLocationSelection(location);
 
   // Custom Hooks
   const {
@@ -123,7 +129,7 @@ export default function LocationScreen() {
     }
 
     setSaving(true);
-    const locationData = locationSearchResultToLocationData(selectedLocation);
+    const locationData = locationSearchResultToLocationData(selectedLocation, distance);
     
     let apiSaveSucceeded = false;
     let apiSaveFailedWithNonGuestError = false;

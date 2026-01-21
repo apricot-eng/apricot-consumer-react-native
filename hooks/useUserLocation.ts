@@ -26,6 +26,7 @@ const DEFAULT_LOCATION_OBJECT: LocationData = {
     neighbourhood: DEFAULT_LOCATION.neighbourhood,
     city: DEFAULT_LOCATION.city,
   },
+  location_radius: DEFAULT_LOCATION.radius,
 };
 
 /**
@@ -41,6 +42,7 @@ const userLocationToLocationData = (userLocation: UserLocation): LocationData =>
       neighbourhood: userLocation.location.address.neighbourhood || '',
       city: userLocation.location.address.city || '',
     },
+    location_radius: userLocation.location_radius,
   };
 };
 

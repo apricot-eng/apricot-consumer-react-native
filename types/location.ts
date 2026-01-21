@@ -26,4 +26,5 @@ export interface LocationData extends Coordinates, NominatimMetadata {
   address_components?: Address & {
     [key: string]: any;
   };
+  location_radius?: number;
 }
