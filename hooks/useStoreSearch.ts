@@ -6,13 +6,16 @@ import { logger } from '@/utils/logger';
 export function useStoreSearch() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const loadingStoresRef = useRef(false);
   const lastFetchedRef = useRef<{ center: [number, number]; radius: number } | null>(null);
 
   const fetchStores = useCallback(async (
     center: [number, number],
     radiusKm: number
   ) => {
-    if (loadingStores) {
+    if (loadingStoresRef.current) {
       logger.debug('useStoreSearch', 'Skipping fetch - already loading');
       return;
     }
@@ -32,36 +35,30 @@ export function useStoreSearch() {
     }
 
     try {
+      loadingStoresRef.current = true;
       setLoadingStores(true);
+      setError(null);
+      
       const bounds = calculateBoundsFromCenter(center, radiusKm);
       logger.debug('useStoreSearch', 'Fetching stores for center and radius', { center, radiusKm, bounds });
       const nearbyStores = await getStoresNearby(bounds);
       logger.info('useStoreSearch', `Fetched ${nearbyStores?.length || 0} stores`);
 
-      logger.debug('useStoreSearch', 'Stores received from API', {
-        count: nearbyStores?.length || 0,
-        stores: nearbyStores?.map(store => ({
-          id: store.id,
-          name: store.store_name,
-          lat: store.latitude,
-          long: store.longitude,
-          category: store.category,
-          hasValidCoords: isValidCoordinate(store.latitude, store.longitude)
-        }))
-      });
-
       setStores(nearbyStores);
       lastFetchedRef.current = { center, radius: radiusKm };
-    } catch (error) {
+    } catch (error: any) {
       logger.error('useStoreSearch', 'Error fetching stores', error, { center, radiusKm });
+      setError(error);
     } finally {
+      loadingStoresRef.current = false;
       setLoadingStores(false);
     }
-  }, [loadingStores]);
+  }, []);
 
   return {
     stores,
     loadingStores,
+    error,
     fetchStores
   };
 }

@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
+import { toastConfig } from '@/components/ToastConfig';
 import { LocationProvider } from '@/contexts/LocationContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserLocation } from '@/hooks/useUserLocation';
@@ -64,7 +65,7 @@ export default function RootLayout() {
             />
           </Stack>
           <StatusBar style="auto" />
-          <Toast />
+          <Toast config={toastConfig} />
         </ThemeProvider>
       </LocationProvider>
     </SafeAreaProvider>

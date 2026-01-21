@@ -20,7 +20,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -28,6 +28,7 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 
 const MAP_STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${process.env.EXPO_PUBLIC_MAPTILER_API_KEY}`;
 
@@ -64,7 +65,23 @@ export default function LocationScreen() {
     handleRegionDidChange,
   } = useMapControl(location);
 
-  const { stores, loadingStores, fetchStores } = useStoreSearch();
+  const { stores, loadingStores, fetchStores, error: storesError } = useStoreSearch();
+
+  // Handle store fetch error
+  useEffect(() => {
+    if (storesError) {
+      Toast.show({
+        type: 'errorRetry',
+        text1: t('common.error'),
+        text2: t('location.errorFetchingStores'),
+        position: 'top',
+        visibilityTime: 6000,
+        props: {
+          onRetry: () => fetchStores(mapCenter, distance),
+        },
+      });
+    }
+  }, [storesError, mapCenter, distance, fetchStores]);
 
   // Initial store fetch
   useFocusEffect(
