@@ -10,6 +10,7 @@ export interface LocationSearchResult extends Coordinates, NominatimMetadata {
 }
 export interface UserLocation extends Coordinates {
   location_id: number;
+  location_radius: number;
 
   location: Coordinates & NominatimMetadata & {
     display_name: string;

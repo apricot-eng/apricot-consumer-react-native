@@ -12,5 +12,6 @@ export const DEFAULT_LOCATION = {
     state: 'Buenos Aires',
     country: 'Argentina',
     place_id: null,
+    radius: 5, // Default 5km radius
   };
   

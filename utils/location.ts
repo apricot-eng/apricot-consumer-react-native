@@ -95,6 +95,7 @@ export const getDefaultUserLocation = (): UserLocation => ({
   location_id: 0,
   lat: DEFAULT_LOCATION.lat,
   long: DEFAULT_LOCATION.long,
+  location_radius: DEFAULT_LOCATION.radius,
   location: {
     lat: DEFAULT_LOCATION.lat,
     long: DEFAULT_LOCATION.long,
@@ -112,10 +113,12 @@ export const getDefaultUserLocation = (): UserLocation => ({
 /**
  * Converts a LocationSearchResult to LocationData format
  * @param selectedLocation - Location search result to convert
+ * @param radius - Optional search radius in kilometers
  * @returns LocationData object ready for saving
  */
 export const locationSearchResultToLocationData = (
-  selectedLocation: LocationSearchResult
+  selectedLocation: LocationSearchResult,
+  radius?: number
 ): LocationData => {
   return {
     lat: selectedLocation.lat,
@@ -126,5 +129,6 @@ export const locationSearchResultToLocationData = (
       neighbourhood: selectedLocation.address.neighbourhood,
       city: selectedLocation.address.city,
     },
+    location_radius: radius,
   };
 };
