@@ -7,6 +7,7 @@ export function useLocationSearch() {
   const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<number | null>(null);
+  const skipSearchRef = useRef(false);
 
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -28,6 +29,11 @@ export function useLocationSearch() {
   }, []);
 
   useEffect(() => {
+    if (skipSearchRef.current) {
+      skipSearchRef.current = false;
+      return;
+    }
+
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -53,11 +59,18 @@ export function useLocationSearch() {
     setSearchResults([]);
   }
 
+  const setSearchQueryWithoutSearch = useCallback((query: string) => {
+    skipSearchRef.current = true;
+    setSearchQuery(query);
+    setSearchResults([]);
+  }, []);
+
   return {
     searchQuery,
     setSearchQuery,
     searchResults,
     isSearching,
-    clearSearch
+    clearSearch,
+    setSearchQueryWithoutSearch
   };
 }

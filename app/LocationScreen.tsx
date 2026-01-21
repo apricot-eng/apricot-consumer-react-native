@@ -53,6 +53,7 @@ export default function LocationScreen() {
     searchResults,
     isSearching,
     clearSearch,
+    setSearchQueryWithoutSearch,
   } = useLocationSearch();
 
   const {
@@ -96,8 +97,7 @@ export default function LocationScreen() {
   // Handle location selection from search
   const handleLocationSelect = (locationResult: LocationSearchResult) => {
     setSelectedLocation(locationResult);
-    setSearchQuery(locationResult.display_name ?? '');
-    clearSearch();
+    setSearchQueryWithoutSearch(locationResult.display_name ?? '');
     Keyboard.dismiss();
 
     const newCenter = validateAndConvertCoordinates(locationResult);
@@ -130,7 +130,7 @@ export default function LocationScreen() {
       };
 
       setSelectedLocation(currentLocSearchResult);
-      setSearchQuery(currentLocSearchResult.display_name);
+      setSearchQueryWithoutSearch(currentLocSearchResult.display_name);
       centerOnCoordinates(newCenter, 15);
       fetchStores(newCenter, distance);
     } catch (error) {
@@ -262,6 +262,7 @@ export default function LocationScreen() {
         onUseCurrentLocation={handleUseCurrentLocation}
         onSelect={handleSelect}
         saving={saving}
+        selectedLocation={selectedLocation}
       />
     </SafeAreaView>
   );
