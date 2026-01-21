@@ -183,7 +183,7 @@ export default function LocationScreen() {
     triggerRefresh();
     
     setSaving(false);
-    router.dismiss();
+    router.back();
   };
 
   // Handle distance slider completion
