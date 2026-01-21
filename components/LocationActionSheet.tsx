@@ -27,6 +27,7 @@ interface LocationActionSheetProps {
   onUseCurrentLocation: () => void;
   onSelect: () => void;
   saving: boolean;
+  selectedLocation?: LocationSearchResult | null;
 }
 
 export default function LocationActionSheet({
@@ -41,6 +42,7 @@ export default function LocationActionSheet({
   onUseCurrentLocation,
   onSelect,
   saving,
+  selectedLocation,
 }: LocationActionSheetProps) {
   return (
     <View style={styles.bottomSheet}>
@@ -98,7 +100,10 @@ export default function LocationActionSheet({
               ))}
             </View>
           )}
-          {searchQuery.trim() && searchResults.length === 0 && !isSearching && (
+          {searchQuery.trim() && 
+           searchResults.length === 0 && 
+           !isSearching && 
+           searchQuery !== selectedLocation?.display_name && (
             <View style={styles.searchResults}>
               <Text style={styles.noResultsText}>{t('location.noResults')}</Text>
             </View>
