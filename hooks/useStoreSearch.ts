@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { getStoresNearby, Store } from '@/api/stores';
-import { calculateBoundsFromCenter, isValidCoordinate } from '@/utils/location';
+import { isValidCoordinate } from '@/utils/location';
 import { logger } from '@/utils/logger';
 
 export function useStoreSearch() {
@@ -39,9 +39,12 @@ export function useStoreSearch() {
       setLoadingStores(true);
       setError(null);
       
-      const bounds = calculateBoundsFromCenter(center, radiusKm);
-      logger.debug('useStoreSearch', 'Fetching stores for center and radius', { center, radiusKm, bounds });
-      const nearbyStores = await getStoresNearby(bounds);
+      // Extract lat and long from center [longitude, latitude]
+      const lat = center[1];
+      const long = center[0];
+      
+      logger.debug('useStoreSearch', 'Fetching stores for center and radius', { center, lat, long, radiusKm });
+      const nearbyStores = await getStoresNearby(lat, long, radiusKm);
       logger.info('useStoreSearch', `Fetched ${nearbyStores?.length || 0} stores`);
 
       setStores(nearbyStores);

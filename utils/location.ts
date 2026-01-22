@@ -22,7 +22,7 @@ export const isValidCoordinate = (lat?: number, long?: number): boolean => {
 
 /**
  * Calculate bounding box from center point and radius (in km)
- * The API requires bounds, so we convert center+radius to N/S/E/W bounds
+ * Note: This function is kept for potential future use but is no longer used by the stores API
  * @param center - Center point as [longitude, latitude]
  * @param radiusKm - Radius in kilometers
  * @returns MapBounds object with north, south, east, west coordinates
