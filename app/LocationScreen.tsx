@@ -68,6 +68,62 @@ export default function LocationScreen() {
 
   const { stores, loadingStores, fetchStores, error: storesError } = useStoreSearch();
 
+  // Helper function to get and set current location
+  const setCurrentLocationFromGPS = useCallback(async () => {
+    try {
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = currentLocation.coords;
+      
+      const newCenter: [number, number] = [longitude, latitude];
+      const currentLocSearchResult: LocationSearchResult = {
+        id: 'current',
+        display_name: 'Mi ubicación actual',
+        lat: latitude,
+        long: longitude,
+        place_id: '',
+        address: {},
+      };
+
+      setSelectedLocation(currentLocSearchResult);
+      setSearchQueryWithoutSearch(currentLocSearchResult.display_name ?? 'Mi ubicación actual');
+      centerOnCoordinates(newCenter, 15);
+      fetchStores(newCenter, distance);
+    } catch (error) {
+      logger.error('LOCATION_SCREEN', 'Error getting current location', error);
+    }
+  }, [setSelectedLocation, setSearchQueryWithoutSearch, centerOnCoordinates, fetchStores, distance]);
+
+  // Check and request location permission on first visit
+  useFocusEffect(
+    useCallback(() => {
+      const checkAndRequestPermission = async () => {
+        try {
+          const { status } = await Location.getForegroundPermissionsAsync();
+          
+          // Only request permission if it hasn't been asked before (undetermined)
+          if (status === 'undetermined') {
+            const { status: requestStatus } = await Location.requestForegroundPermissionsAsync();
+            
+            if (requestStatus === 'granted') {
+              // Permission granted, get user's location
+              await setCurrentLocationFromGPS();
+            } else {
+              // Permission denied, default location (Palermo) will be used
+              logger.debug('LOCATION_SCREEN', 'Location permission denied, using default location');
+            }
+          }
+        } catch (error) {
+          logger.error('LOCATION_SCREEN', 'Error checking/requesting location permission', error);
+        }
+      };
+
+      // Only check permission after location has finished loading
+      if (!loadingLocation) {
+        checkAndRequestPermission();
+      }
+    }, [loadingLocation, setCurrentLocationFromGPS])
+  );
+
   // Handle store fetch error
   useEffect(() => {
     if (storesError) {
@@ -116,23 +172,7 @@ export default function LocationScreen() {
         return;
       }
 
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = currentLocation.coords;
-      
-      const newCenter: [number, number] = [longitude, latitude];
-      const currentLocSearchResult: LocationSearchResult = {
-        id: 'current',
-        display_name: 'Mi ubicación actual',
-        lat: latitude,
-        long: longitude,
-        place_id: '',
-        address: {},
-      };
-
-      setSelectedLocation(currentLocSearchResult);
-      setSearchQueryWithoutSearch(currentLocSearchResult.display_name);
-      centerOnCoordinates(newCenter, 15);
-      fetchStores(newCenter, distance);
+      await setCurrentLocationFromGPS();
     } catch (error) {
       logger.error('LOCATION_SCREEN', 'Error getting current location', error);
     }
