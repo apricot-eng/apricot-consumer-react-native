@@ -10,8 +10,10 @@ const mockGetStoresNearby = getStoresNearby as jest.Mock;
 const mockLogger = logger as jest.Mocked<typeof logger>;
 
 describe('useStoreSearch', () => {
-  const center: [number, number] = [-58.4245236, -34.5803362];
+  const center: [number, number] = [-58.4245236, -34.5803362]; // [longitude, latitude]
   const radius = 2;
+  const expectedLat = -34.5803362; // center[1]
+  const expectedLong = -58.4245236; // center[0]
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -37,6 +39,7 @@ describe('useStoreSearch', () => {
     expect(result.current.loadingStores).toBe(false);
     expect(result.current.stores).toEqual(mockStores);
     expect(mockGetStoresNearby).toHaveBeenCalledTimes(1);
+    expect(mockGetStoresNearby).toHaveBeenCalledWith(expectedLat, expectedLong, radius);
   });
 
   it('should not fetch if already loading', async () => {

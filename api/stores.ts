@@ -55,56 +55,47 @@ export const getStoreById = async (id: number): Promise<Store> => {
 };
 
 /**
- * Get stores within map bounds
- * @param bounds - Map bounding box coordinates
- * @param userLocation - Optional user location for distance calculation
- * @returns Array of stores within the bounds
+ * Get stores nearby a location
+ * @param lat - Latitude of the center point
+ * @param long - Longitude of the center point
+ * @param radiusKm - Search radius in kilometers
+ * @returns Array of stores within the radius
  */
 export const getStoresNearby = async (
-  bounds: MapBounds,
-  userLocation?: UserLocationCoords
+  lat: number,
+  long: number,
+  radiusKm: number
 ): Promise<Store[]> => {
   try {
-    // Validate bounds before using them
-    if (
-      bounds.north === undefined ||
-      bounds.south === undefined ||
-      bounds.east === undefined ||
-      bounds.west === undefined
-    ) {
-      throw new Error('Invalid map bounds: missing required coordinates');
+    // Validate coordinates
+    if (lat === undefined || long === undefined || radiusKm === undefined) {
+      throw new Error('Invalid parameters: lat, long, and radiusKm are required');
     }
 
-    // Ensure north > south and east > west
-    if (bounds.north <= bounds.south) {
-      throw new Error(`Invalid map bounds: north (${bounds.north}) must be greater than south (${bounds.south})`);
+    if (typeof lat !== 'number' || typeof long !== 'number' || typeof radiusKm !== 'number') {
+      throw new Error('Invalid parameters: lat, long, and radiusKm must be numbers');
     }
-    if (bounds.east <= bounds.west) {
-      throw new Error(`Invalid map bounds: east (${bounds.east}) must be greater than west (${bounds.west})`);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(long) || !Number.isFinite(radiusKm)) {
+      throw new Error('Invalid parameters: lat, long, and radiusKm must be finite numbers');
+    }
+
+    if (radiusKm <= 0) {
+      throw new Error(`Invalid radius: radiusKm (${radiusKm}) must be greater than 0`);
     }
 
     const params = new URLSearchParams();
-    params.append('north', bounds.north.toString());
-    params.append('south', bounds.south.toString());
-    params.append('east', bounds.east.toString());
-    params.append('west', bounds.west.toString());
-    
-    if (userLocation) {
-      if (userLocation.lat === undefined || userLocation.long === undefined) {
-        logger.warn('STORES_API', 'Invalid user location coordinates', userLocation);
-      } else {
-        params.append('lat', userLocation.lat.toString());
-        params.append('long', userLocation.long.toString());
-      }
-    }
+    params.append('lat', lat.toString());
+    params.append('long', long.toString());
+    params.append('radius', radiusKm.toString());
 
-    logger.debug('STORES_API', 'Fetching nearby stores', { bounds, userLocation });
+    logger.debug('STORES_API', 'Fetching nearby stores', { lat, long, radiusKm });
     const response = await apiClient.get(`/stores/nearby?${params.toString()}`);
     
     logger.json('STORES_API', 'Stores response', response.data);
     return response.data;
   } catch (error: any) {
-    logger.error('STORES_API', 'Error fetching nearby stores', error, { bounds, userLocation });
+    logger.error('STORES_API', 'Error fetching nearby stores', error, { lat, long, radiusKm });
     const errorType = getErrorType(error);
     showErrorToast(errorType);
     
