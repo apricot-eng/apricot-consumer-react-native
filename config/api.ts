@@ -13,6 +13,6 @@
 export const API_CONFIG = {
   BASE_URL: __DEV__
     ? 'http://192.168.50.50:8000/api' // Change to your local IP for mobile testing
-    : 'https://api.apricot.com/api', // Production URL (update when available)
+    : 'https://reliable-abundance-production.up.railway.app/api', // Production URL (update when available)
 };
 
