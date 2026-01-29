@@ -11,7 +11,7 @@ export default function ModalScreen() {
 
   const handleGoHome = () => {
     router.dismiss();
-    router.push('/main_navigation/IndexScreen' as any);
+    router.push('/main_navigation/SupriseBagsBrowse' as any);
   };
 
   return (

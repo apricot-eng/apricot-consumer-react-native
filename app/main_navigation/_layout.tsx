@@ -18,7 +18,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="IndexScreen"
+        name="SupriseBagsBrowse"
         options={{
           title: t('navigation.inicio'),
           tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
