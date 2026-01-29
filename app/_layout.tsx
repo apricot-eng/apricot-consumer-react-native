@@ -11,7 +11,7 @@ import { LocationProvider } from '@/contexts/LocationContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserLocation } from '@/hooks/useUserLocation';
 
-import { styles } from '@/styles/app/_layout.styles';
+import { styles } from './_layoutx.styles';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

@@ -4,7 +4,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { styles } from '@/styles/app/main_navigation/ProfileScreen.styles';
+import { styles } from './ProfileScreen.styles';
 
 export default function ProfileScreen() {
   return (

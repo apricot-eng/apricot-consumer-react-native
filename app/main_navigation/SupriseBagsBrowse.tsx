@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { styles } from '@/styles/app/main_navigation/SupriseBagsBrowse.styles';
+import { styles } from './SupriseBagsBrowse.styles';
 
 export default function SupriseBagsBrowse() {
   const router = useRouter();

@@ -1,5 +1,6 @@
-import { FigmaColors } from '@/constants/theme';
 import { StyleSheet } from 'react-native';
+
+import { FigmaColors } from '@/constants/theme';
 
 export const styles = StyleSheet.create({
   container: {
@@ -29,134 +30,6 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  bottomSheet: {
-    backgroundColor: FigmaColors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: FigmaColors.textBlack,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-    maxHeight: '50%',
-  },
-  bottomSheetContent: {
-    flex: 1,
-  },
-  bottomSheetScrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  sliderContainer: {
-    marginBottom: 24,
-  },
-  sliderLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  distanceValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  searchContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: 12,
-    top: 12,
-    zIndex: 1,
-  },
-  searchInput: {
-    height: 48,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
-    paddingLeft: 44,
-    paddingRight: 44,
-    fontSize: 16,
-    color: '#333',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  searchLoader: {
-    position: 'absolute',
-    right: 12,
-    top: 14,
-  },
-  searchResults: {
-    position: 'absolute',
-    top: 56,
-    left: 0,
-    right: 0,
-    backgroundColor: FigmaColors.white,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: FigmaColors.textBlack,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 10,
-    maxHeight: 200,
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    gap: 12,
-  },
-  searchResultText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#333',
-  },
-  noResultsText: {
-    padding: 16,
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  currentLocationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    gap: 8,
-    marginBottom: 16,
-  },
-  currentLocationText: {
-    fontSize: 16,
-    color: FigmaColors.earthBrown,
-    fontWeight: '500',
-  },
-  selectButton: {
-    backgroundColor: FigmaColors.earthBrown,
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectButtonDisabled: {
-    opacity: 0.6,
-  },
-  selectButtonText: {
-    color: FigmaColors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
   pinContainer: {
     width: 28,
     height: 37,
@@ -170,4 +43,3 @@ export const styles = StyleSheet.create({
 });
 
 export default styles;
-

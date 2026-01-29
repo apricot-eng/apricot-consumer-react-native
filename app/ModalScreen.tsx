@@ -4,7 +4,7 @@ import { TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-import { styles } from '@/styles/app/ModalScreen.styles';
+import { styles } from './ModalScreen.styles';
 
 export default function ModalScreen() {
   const router = useRouter();

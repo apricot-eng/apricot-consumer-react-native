@@ -8,7 +8,7 @@ import { useMapControl } from '@/hooks/useMapControl';
 import { useStoreSearch } from '@/hooks/useStoreSearch';
 import { cacheUserLocation, useUserLocation } from '@/hooks/useUserLocation';
 import { t } from '@/i18n';
-import { styles } from '@/styles/app/LocationScreen.styles';
+import { styles } from './LocationScreen.styles';
 import { ErrorType } from '@/utils/error';
 import { distanceToZoomLevel, isValidCoordinate, locationSearchResultToLocationData, validateAndConvertCoordinates } from '@/utils/location';
 import { logger } from '@/utils/logger';

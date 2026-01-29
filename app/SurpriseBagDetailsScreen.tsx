@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { styles } from '@/styles/app/SurpriseBagDetailsScreen.styles';
+import { styles } from './SurpriseBagDetailsScreen.styles';
 
 export default function SurpriseBagDetailsScreen() {
   const router = useRouter();
