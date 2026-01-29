@@ -7,8 +7,8 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { styles } from '@/components/Button/Button.styles';
 import { FigmaColors } from '@/constants/theme';
-import { styles } from '@/styles/components/ui/Button.styles';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { Button } from '@/components/Button';
-import { styles } from '@/styles/components/LocationActionSheet.styles';
+import { styles } from '@/components/LocationActionSheet/LocationActionSheet.styles';
 
 interface LocationActionSheetProps {
   distance: number;

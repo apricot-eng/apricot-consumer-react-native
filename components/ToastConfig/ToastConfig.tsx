@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { ToastConfigParams } from 'react-native-toast-message';
 
-import styles from '@/styles/components/ToastConfig.styles';
+import styles from '@/components/ToastConfig/ToastConfig.styles';
 
 interface ErrorRetryToastProps {
   onRetry?: () => void;
