@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
 import { styles } from './ModalScreen.styles';
 

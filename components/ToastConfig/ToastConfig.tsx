@@ -1,11 +1,15 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { BaseToastProps } from 'react-native-toast-message';
+import { ToastConfigParams } from 'react-native-toast-message';
 
 import styles from '@/styles/components/ToastConfig.styles';
 
+interface ErrorRetryToastProps {
+  onRetry?: () => void;
+}
+
 export const toastConfig = {
-  errorRetry: ({ text1, text2, props }: BaseToastProps) => (
+  errorRetry: ({ text1, text2, props }: ToastConfigParams<ErrorRetryToastProps>) => (
     <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>{text1}</Text>
