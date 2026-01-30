@@ -183,7 +183,11 @@ export default function LocationScreen() {
     triggerRefresh();
     
     setSaving(false);
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/main_navigation');
+    }
   };
 
   // Handle distance slider completion

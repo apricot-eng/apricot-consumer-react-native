@@ -5,7 +5,7 @@ import { t } from '@/i18n';
 import { logger } from '@/utils/logger';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -23,19 +23,6 @@ export default function SupriseBagsBrowse() {
   const [surpriseBags, setSurpriseBags] = useState<SurpriseBag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const hasShownLocationScreen = useRef(false);
-
-  // Automatically show LocationScreen as modal when screen first loads
-  useEffect(() => {
-    if (!isLoadingLocation && !hasShownLocationScreen.current) {
-      hasShownLocationScreen.current = true;
-      // Small delay to ensure main screen is rendered first
-      const timer = setTimeout(() => {
-        router.push('/LocationScreen');
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoadingLocation, router]);
 
   const loadSurpriseBags = async () => {
     try {

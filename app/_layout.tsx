@@ -36,7 +36,6 @@ export default function RootLayout() {
       <LocationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack
-            initialRouteName="main_navigation"
             screenOptions={{
               headerShown: false,
             }}>
