@@ -4,13 +4,13 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { styles } from './OrdersScreen.styles';
+import { styles } from './ProfileScreen.styles';
 
-export function OrdersScreen() {
+export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Ionicons name="receipt-outline" size={64} color="#ccc" />
+        <Ionicons name="person-outline" size={64} color="#ccc" />
         <Text style={styles.text}>{t('placeholders.underDevelopment')}</Text>
       </View>
     </SafeAreaView>

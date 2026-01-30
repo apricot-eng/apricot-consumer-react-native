@@ -32,7 +32,7 @@ import Toast from 'react-native-toast-message';
 
 const MAP_STYLE_URL = `https://api.maptiler.com/maps/streets-v2/style.json?key=${process.env.EXPO_PUBLIC_MAPTILER_API_KEY}`;
 
-export function LocationScreen() {
+export default function LocationScreen() {
   const router = useRouter();
   const { location, loading: loadingLocation, refresh } = useUserLocation();
   const { triggerRefresh } = useLocationContext();

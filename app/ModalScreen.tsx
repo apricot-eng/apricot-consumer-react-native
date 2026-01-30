@@ -6,7 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 
 import { styles } from './ModalScreen.styles';
 
-export function ModalScreen() {
+export default function ModalScreen() {
   const router = useRouter();
 
   const handleGoHome = () => {

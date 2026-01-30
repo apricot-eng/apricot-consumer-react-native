@@ -22,7 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './SurpriseBagDetailsScreen.styles';
 
-export function SurpriseBagDetailsScreen() {
+export default function SurpriseBagDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [surpriseBag, setSurpriseBag] = useState<SurpriseBag | null>(null);
