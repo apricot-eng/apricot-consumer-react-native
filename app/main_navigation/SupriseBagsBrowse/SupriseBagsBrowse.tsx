@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './SupriseBagsBrowse.styles';
 
-export default function SupriseBagsBrowse() {
+export function SupriseBagsBrowse() {
   const router = useRouter();
   const { currentNeighbourhood, isLoadingLocation } = useLocationContext();
   const [surpriseBags, setSurpriseBags] = useState<SurpriseBag[]>([]);

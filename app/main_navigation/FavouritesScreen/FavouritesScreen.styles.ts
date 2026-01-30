@@ -16,5 +16,3 @@ export const styles = StyleSheet.create({
     color: '#999',
   },
 });
-
-export default styles;

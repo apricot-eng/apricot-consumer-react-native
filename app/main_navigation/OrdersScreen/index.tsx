@@ -1,1 +1,1 @@
-export { default } from './OrdersScreen';
+export { OrdersScreen as default } from './OrdersScreen';

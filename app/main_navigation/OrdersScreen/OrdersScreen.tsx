@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './OrdersScreen.styles';
 
-export default function OrdersScreen() {
+export function OrdersScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>

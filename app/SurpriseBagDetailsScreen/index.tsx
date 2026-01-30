@@ -1,1 +1,1 @@
-export { default } from './SurpriseBagDetailsScreen';
+export { SurpriseBagDetailsScreen as default } from './SurpriseBagDetailsScreen';

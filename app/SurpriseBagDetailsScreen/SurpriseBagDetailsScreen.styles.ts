@@ -388,5 +388,3 @@ export const styles = StyleSheet.create({
     lineHeight: 24,
   },
 });
-
-export default styles;

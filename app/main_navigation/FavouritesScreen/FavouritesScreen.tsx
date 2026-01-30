@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { styles } from './FavouritesScreen.styles';
 
-export default function FavouritesScreen() {
+export function FavouritesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>

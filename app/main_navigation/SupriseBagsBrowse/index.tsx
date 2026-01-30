@@ -1,1 +1,1 @@
-export { default } from './SupriseBagsBrowse';
+export { SupriseBagsBrowse as default } from './SupriseBagsBrowse';

@@ -41,5 +41,3 @@ export const styles = StyleSheet.create({
     height: 37,
   },
 });
-
-export default styles;

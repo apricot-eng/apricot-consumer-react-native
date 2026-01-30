@@ -1,1 +1,1 @@
-export { default } from './LocationScreen';
+export { LocationScreen as default } from './LocationScreen';
